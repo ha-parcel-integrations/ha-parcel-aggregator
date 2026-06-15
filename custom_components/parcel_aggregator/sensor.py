@@ -35,6 +35,7 @@ async def async_setup_entry(
             ParcelsIncomingSensor(coordinator),
             ParcelsOutgoingSensor(coordinator),
             ParcelsDeliveredSensor(coordinator),
+            ParcelsAwaitingPickupSensor(coordinator),
             ParcelsNextDeliverySensor(coordinator),
         ]
     )
@@ -49,12 +50,13 @@ def _build_device_info() -> DeviceInfo:
     )
 
 
-class _BaseSumSensor(CoordinatorEntity[ParcelAggregatorCoordinator], SensorEntity):
-    """Base for sum-style aggregator sensors."""
+class _BaseListSensor(CoordinatorEntity[ParcelAggregatorCoordinator], SensorEntity):
+    """Base for sum-style aggregator sensors that also expose a parcel list."""
 
     _attr_native_unit_of_measurement = "parcels"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _bucket: str = ""
+    _list_attr: str = "parcels"
 
     def __init__(self, coordinator: ParcelAggregatorCoordinator) -> None:
         super().__init__(coordinator)
@@ -70,25 +72,36 @@ class _BaseSumSensor(CoordinatorEntity[ParcelAggregatorCoordinator], SensorEntit
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return {"by_carrier": self._info().get("by_carrier", {})}
+        info = self._info()
+        return {
+            "by_carrier": info.get("by_carrier", {}),
+            self._list_attr: info.get("parcels", []),
+        }
 
 
-class ParcelsIncomingSensor(_BaseSumSensor):
+class ParcelsIncomingSensor(_BaseListSensor):
     _attr_name = "Parcels Incoming"
     _attr_icon = "mdi:package-variant-closed"
     _bucket = "incoming"
 
 
-class ParcelsOutgoingSensor(_BaseSumSensor):
+class ParcelsOutgoingSensor(_BaseListSensor):
     _attr_name = "Parcels Outgoing"
     _attr_icon = "mdi:package-variant-closed"
     _bucket = "outgoing"
+    _list_attr = "shipments"
 
 
-class ParcelsDeliveredSensor(_BaseSumSensor):
+class ParcelsDeliveredSensor(_BaseListSensor):
     _attr_name = "Parcels Delivered"
     _attr_icon = "mdi:package-variant"
     _bucket = "delivered"
+
+
+class ParcelsAwaitingPickupSensor(_BaseListSensor):
+    _attr_name = "Parcels Awaiting Pickup"
+    _attr_icon = "mdi:store-clock"
+    _bucket = "awaiting_pickup"
 
 
 class ParcelsNextDeliverySensor(
@@ -114,7 +127,9 @@ class ParcelsNextDeliverySensor(
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        by_carrier = self._info().get("by_carrier", {})
+        info = self._info()
+        by_carrier = info.get("by_carrier", {})
         return {
-            "by_carrier": {label: dt.isoformat() for label, dt in by_carrier.items()}
+            "by_carrier": {label: dt.isoformat() for label, dt in by_carrier.items()},
+            "parcel": info.get("parcel"),
         }

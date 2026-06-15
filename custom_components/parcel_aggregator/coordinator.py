@@ -11,7 +11,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import DOMAIN, KNOWN_CARRIERS, SOURCE_SUFFIXES
+from .const import ATTR_KEY_BY_BUCKET, DOMAIN, KNOWN_CARRIERS, SOURCE_SUFFIXES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def parse_int_state(value: str | None) -> int | None:
 
 
 def parse_timestamp_state(value: str | None) -> datetime | None:
-    """Convert a sensor state to ``datetime``, or ``None`` if unavailable/unparseable."""
+    """Convert an ISO 8601 timestamp string to ``datetime``, or ``None`` if unparseable."""
     if value in _UNAVAILABLE_STATES:
         return None
     try:
@@ -41,10 +41,7 @@ def parse_timestamp_state(value: str | None) -> datetime | None:
 def aggregate_sum(
     samples: list[tuple[str, int | None]],
 ) -> dict[str, Any]:
-    """Sum a list of (carrier_label, int_value) samples.
-
-    Returns ``{"total": <int>, "by_carrier": {<label>: <int>}, "any_available": <bool>}``.
-    """
+    """Sum (carrier_label, int_value) samples into a total + per-carrier breakdown."""
     total = 0
     by_carrier: dict[str, int] = {}
     any_available = False
@@ -57,24 +54,55 @@ def aggregate_sum(
     return {"total": total, "by_carrier": by_carrier, "any_available": any_available}
 
 
-def aggregate_min_timestamp(
-    samples: list[tuple[str, datetime | None]],
-) -> dict[str, Any]:
-    """Pick the earliest datetime across samples.
+def strip_raw(parcel: dict) -> dict:
+    """Return a copy of a normalized parcel without the carrier-specific ``raw`` payload."""
+    return {k: v for k, v in parcel.items() if k != "raw"}
 
-    Returns ``{"value": <datetime|None>, "by_carrier": {<label>: <datetime>}}``.
+
+def next_delivery_from(parcels: list[dict]) -> dict[str, Any]:
+    """Pick the earliest ``planned_from`` across a list of normalized parcels.
+
+    Returns ``{"value": <datetime|None>, "by_carrier": {<label>: <datetime>},
+    "parcel": <minimal parcel dict|None>}``.
     """
     earliest: datetime | None = None
+    earliest_parcel: dict | None = None
     by_carrier: dict[str, datetime] = {}
-    for label, value in samples:
-        if value is None:
+
+    for parcel in parcels:
+        dt = parse_timestamp_state(parcel.get("planned_from"))
+        if dt is None:
             continue
-        if earliest is None or value < earliest:
-            earliest = value
-        cur = by_carrier.get(label)
-        if cur is None or value < cur:
-            by_carrier[label] = value
-    return {"value": earliest, "by_carrier": by_carrier}
+        carrier = parcel.get("carrier") or "Unknown"
+        cur = by_carrier.get(carrier)
+        if cur is None or dt < cur:
+            by_carrier[carrier] = dt
+        if earliest is None or dt < earliest:
+            earliest = dt
+            earliest_parcel = parcel
+
+    return {
+        "value": earliest,
+        "by_carrier": by_carrier,
+        "parcel": strip_raw(earliest_parcel) if earliest_parcel else None,
+    }
+
+
+def awaiting_pickup_from(parcels: list[dict]) -> dict[str, Any]:
+    """Count active parcels destined for a pickup point and provide the list."""
+    matching = [
+        p for p in parcels
+        if p.get("pickup") and not p.get("delivered")
+    ]
+    by_carrier: dict[str, int] = {}
+    for parcel in matching:
+        carrier = parcel.get("carrier") or "Unknown"
+        by_carrier[carrier] = by_carrier.get(carrier, 0) + 1
+    return {
+        "total": len(matching),
+        "by_carrier": by_carrier,
+        "parcels": [strip_raw(p) for p in matching],
+    }
 
 
 class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -88,7 +116,7 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=None,
         )
         self._entry = entry
-        # bucket name -> {entity_id: carrier_platform}
+        # bucket -> {entity_id: carrier_platform}
         self._sources: dict[str, dict[str, str]] = {
             bucket: {} for bucket in SOURCE_SUFFIXES.values()
         }
@@ -137,31 +165,41 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.async_set_updated_data(self._compute())
 
     def _compute(self) -> dict[str, Any]:
+        incoming_parcels = self._collect_parcels("incoming")
+        delivered_parcels = self._collect_parcels("delivered")
+        outgoing_parcels = self._collect_parcels("outgoing")
         return {
-            "incoming": self._sum_bucket("incoming"),
-            "outgoing": self._sum_bucket("outgoing"),
-            "delivered": self._sum_bucket("delivered"),
-            "next_delivery": self._min_timestamp_bucket("next_delivery"),
+            "incoming": {
+                **self._sum_bucket("incoming"),
+                "parcels": [strip_raw(p) for p in incoming_parcels],
+            },
+            "outgoing": {
+                **self._sum_bucket("outgoing"),
+                "parcels": [strip_raw(p) for p in outgoing_parcels],
+            },
+            "delivered": {
+                **self._sum_bucket("delivered"),
+                "parcels": [strip_raw(p) for p in delivered_parcels],
+            },
+            "next_delivery": next_delivery_from(incoming_parcels),
+            "awaiting_pickup": awaiting_pickup_from(incoming_parcels),
         }
 
-    def _samples_int(self, bucket: str) -> list[tuple[str, int | None]]:
-        out: list[tuple[str, int | None]] = []
+    def _sum_bucket(self, bucket: str) -> dict[str, Any]:
+        samples: list[tuple[str, int | None]] = []
         for entity_id, platform in self._sources[bucket].items():
             state = self.hass.states.get(entity_id)
             value = parse_int_state(state.state if state else None)
-            out.append((KNOWN_CARRIERS.get(platform, platform), value))
-        return out
+            samples.append((KNOWN_CARRIERS.get(platform, platform), value))
+        return aggregate_sum(samples)
 
-    def _samples_timestamp(self, bucket: str) -> list[tuple[str, datetime | None]]:
-        out: list[tuple[str, datetime | None]] = []
-        for entity_id, platform in self._sources[bucket].items():
+    def _collect_parcels(self, bucket: str) -> list[dict]:
+        attr_key = ATTR_KEY_BY_BUCKET[bucket]
+        out: list[dict] = []
+        for entity_id in self._sources[bucket]:
             state = self.hass.states.get(entity_id)
-            value = parse_timestamp_state(state.state if state else None)
-            out.append((KNOWN_CARRIERS.get(platform, platform), value))
+            if not state:
+                continue
+            parcels = state.attributes.get(attr_key) or []
+            out.extend(parcels)
         return out
-
-    def _sum_bucket(self, bucket: str) -> dict[str, Any]:
-        return aggregate_sum(self._samples_int(bucket))
-
-    def _min_timestamp_bucket(self, bucket: str) -> dict[str, Any]:
-        return aggregate_min_timestamp(self._samples_timestamp(bucket))

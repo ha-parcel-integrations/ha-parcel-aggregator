@@ -2,11 +2,39 @@
 from datetime import datetime, timezone
 
 from custom_components.parcel_aggregator.coordinator import (
-    aggregate_min_timestamp,
     aggregate_sum,
+    awaiting_pickup_from,
+    next_delivery_from,
     parse_int_state,
     parse_timestamp_state,
+    strip_raw,
 )
+
+
+def _parcel(
+    carrier: str = "DHL",
+    barcode: str = "ABC",
+    sender: str = "Sender",
+    planned_from: str | None = None,
+    pickup: bool = False,
+    pickup_point: str | None = None,
+    delivered: bool = False,
+    raw: dict | None = None,
+) -> dict:
+    return {
+        "carrier": carrier,
+        "barcode": barcode,
+        "sender": sender,
+        "status": "IN_DELIVERY",
+        "delivered": delivered,
+        "delivered_at": None,
+        "planned_from": planned_from,
+        "planned_to": None,
+        "pickup": pickup,
+        "pickup_point": pickup_point,
+        "url": None,
+        "raw": raw if raw is not None else {"_": "carrier-specific"},
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -95,44 +123,106 @@ def test_sum_marks_unavailable_when_all_none():
 
 
 # ---------------------------------------------------------------------------
-# aggregate_min_timestamp
+# strip_raw
 # ---------------------------------------------------------------------------
 
 
-def _ts(s: str) -> datetime:
-    return datetime.fromisoformat(s)
+def test_strip_raw_removes_raw_key():
+    parcel = _parcel(raw={"big": "payload"})
+    assert "raw" in parcel
+    stripped = strip_raw(parcel)
+    assert "raw" not in stripped
+    assert stripped["carrier"] == "DHL"
+    # original is untouched
+    assert "raw" in parcel
 
 
-def test_min_timestamp_picks_earliest():
-    a = _ts("2026-06-15T10:00:00+00:00")
-    b = _ts("2026-06-13T08:00:00+00:00")
-    c = _ts("2026-06-14T12:00:00+00:00")
-    result = aggregate_min_timestamp([("DHL", a), ("PostNL", b), ("DPD", c)])
-    assert result["value"] == b
-    assert result["by_carrier"] == {"DHL": a, "PostNL": b, "DPD": c}
+def test_strip_raw_is_noop_when_raw_missing():
+    parcel = {"carrier": "DHL", "barcode": "ABC"}
+    assert strip_raw(parcel) == parcel
 
 
-def test_min_timestamp_keeps_earliest_per_carrier():
-    earlier = _ts("2026-06-13T08:00:00+00:00")
-    later = _ts("2026-06-15T08:00:00+00:00")
-    result = aggregate_min_timestamp([("PostNL", later), ("PostNL", earlier)])
-    assert result["value"] == earlier
-    assert result["by_carrier"] == {"PostNL": earlier}
+# ---------------------------------------------------------------------------
+# next_delivery_from
+# ---------------------------------------------------------------------------
 
 
-def test_min_timestamp_skips_none():
-    a = _ts("2026-06-15T10:00:00+00:00")
-    result = aggregate_min_timestamp([("DHL", None), ("PostNL", a)])
-    assert result["value"] == a
-    assert result["by_carrier"] == {"PostNL": a}
+def test_next_delivery_picks_earliest_across_carriers():
+    parcels = [
+        _parcel(carrier="DHL", barcode="A", planned_from="2026-06-15T10:00:00+00:00"),
+        _parcel(carrier="PostNL", barcode="B", planned_from="2026-06-13T08:00:00+00:00"),
+        _parcel(carrier="DPD", barcode="C", planned_from="2026-06-14T12:00:00+00:00"),
+    ]
+    result = next_delivery_from(parcels)
+    assert result["value"] == datetime(2026, 6, 13, 8, 0, 0, tzinfo=timezone.utc)
+    assert result["parcel"]["barcode"] == "B"
+    assert result["parcel"]["carrier"] == "PostNL"
+    # raw is stripped from the surfaced parcel
+    assert "raw" not in result["parcel"]
 
 
-def test_min_timestamp_returns_none_when_no_data():
-    result = aggregate_min_timestamp([])
-    assert result == {"value": None, "by_carrier": {}}
+def test_next_delivery_by_carrier_keeps_earliest_per_carrier():
+    parcels = [
+        _parcel(carrier="DHL", barcode="A", planned_from="2026-06-15T10:00:00+00:00"),
+        _parcel(carrier="DHL", barcode="B", planned_from="2026-06-13T10:00:00+00:00"),
+    ]
+    result = next_delivery_from(parcels)
+    assert result["by_carrier"]["DHL"] == datetime(2026, 6, 13, 10, 0, 0, tzinfo=timezone.utc)
 
 
-def test_min_timestamp_returns_none_when_all_none():
-    result = aggregate_min_timestamp([("DHL", None), ("PostNL", None)])
+def test_next_delivery_skips_parcels_without_planned_from():
+    parcels = [
+        _parcel(carrier="DHL", barcode="A", planned_from=None),
+        _parcel(carrier="PostNL", barcode="B", planned_from="2026-06-13T10:00:00+00:00"),
+    ]
+    result = next_delivery_from(parcels)
+    assert result["parcel"]["barcode"] == "B"
+
+
+def test_next_delivery_returns_none_when_no_data():
+    result = next_delivery_from([])
+    assert result == {"value": None, "by_carrier": {}, "parcel": None}
+
+
+def test_next_delivery_returns_none_when_no_timestamps():
+    result = next_delivery_from([_parcel(planned_from=None)])
     assert result["value"] is None
-    assert result["by_carrier"] == {}
+    assert result["parcel"] is None
+
+
+# ---------------------------------------------------------------------------
+# awaiting_pickup_from
+# ---------------------------------------------------------------------------
+
+
+def test_awaiting_pickup_counts_pickup_parcels():
+    parcels = [
+        _parcel(carrier="DHL", barcode="A", pickup=True, pickup_point="ServicePoint A"),
+        _parcel(carrier="PostNL", barcode="B", pickup=True),
+        _parcel(carrier="DHL", barcode="C", pickup=False),
+    ]
+    result = awaiting_pickup_from(parcels)
+    assert result["total"] == 2
+    assert result["by_carrier"] == {"DHL": 1, "PostNL": 1}
+    assert {p["barcode"] for p in result["parcels"]} == {"A", "B"}
+
+
+def test_awaiting_pickup_excludes_delivered():
+    parcels = [
+        _parcel(carrier="DHL", barcode="A", pickup=True, delivered=True),
+        _parcel(carrier="DHL", barcode="B", pickup=True, delivered=False),
+    ]
+    result = awaiting_pickup_from(parcels)
+    assert result["total"] == 1
+    assert result["parcels"][0]["barcode"] == "B"
+
+
+def test_awaiting_pickup_returns_zero_when_no_data():
+    result = awaiting_pickup_from([])
+    assert result == {"total": 0, "by_carrier": {}, "parcels": []}
+
+
+def test_awaiting_pickup_strips_raw_from_list():
+    parcels = [_parcel(pickup=True, raw={"big": "payload"})]
+    result = awaiting_pickup_from(parcels)
+    assert "raw" not in result["parcels"][0]

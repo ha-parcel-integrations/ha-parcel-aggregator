@@ -17,6 +17,12 @@ KNOWN_CARRIERS: dict[str, str] = {
 SOURCE_SUFFIXES: dict[str, str] = {
     "_incoming_parcels": "incoming",
     "_outgoing_parcels": "outgoing",
-    "_next_delivery": "next_delivery",
     "_delivered_parcels": "delivered",
+}
+
+# Attribute key on each source sensor that holds the parcel list.
+ATTR_KEY_BY_BUCKET: dict[str, str] = {
+    "incoming": "parcels",
+    "outgoing": "shipments",
+    "delivered": "parcels",
 }

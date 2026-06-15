@@ -45,12 +45,17 @@ The aggregator discovers source entities at setup time. If you add a new carrier
 
 | Entity | Description |
 |--------|-------------|
-| `sensor.parcels_incoming` | Sum of active incoming parcels across all carriers |
-| `sensor.parcels_outgoing` | Sum of active outgoing shipments across all carriers |
-| `sensor.parcels_delivered` | Sum of recently delivered parcels across all carriers (uses each carrier's own filter window) |
-| `sensor.parcels_next_delivery` | Earliest expected delivery datetime across all carriers |
+| `sensor.parcels_incoming` | Sum of active incoming parcels across all carriers; merged parcel list on the `parcels` attribute |
+| `sensor.parcels_outgoing` | Sum of active outgoing shipments across all carriers; merged list on the `shipments` attribute |
+| `sensor.parcels_delivered` | Sum of recently delivered parcels across all carriers (uses each carrier's own filter window); merged list on `parcels` |
+| `sensor.parcels_awaiting_pickup` | Sum of active incoming parcels destined for a pickup point (ServicePoint / PostNL Point / ParcelShop); merged list on `parcels` |
+| `sensor.parcels_next_delivery` | Earliest expected delivery datetime across all carriers; the matching parcel on the `parcel` attribute |
 
 Every sensor exposes a `by_carrier` attribute with the per-carrier breakdown — handy for dashboard cards like "5 incoming (2 DHL · 3 PostNL)".
+
+### Unified parcel list
+
+The `parcels` / `shipments` attribute on each summary sensor contains every parcel from every installed carrier in the carrier-agnostic shape: `carrier`, `barcode`, `sender`, `status`, `delivered`, `delivered_at`, `planned_from`, `planned_to`, `pickup`, `pickup_point`, `url`. The carrier-specific `raw` payload is stripped to keep the aggregator's attribute size small — open the per-carrier sensor if you need it.
 
 ## Disclaimer
 
