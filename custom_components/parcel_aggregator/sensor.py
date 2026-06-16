@@ -57,6 +57,7 @@ def _build_device_info() -> DeviceInfo:
 class _BaseListSensor(CoordinatorEntity[ParcelAggregatorCoordinator], SensorEntity):
     """Base for sum-style aggregator sensors that also expose a parcel list."""
 
+    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = "parcels"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _bucket: str = ""
@@ -84,27 +85,23 @@ class _BaseListSensor(CoordinatorEntity[ParcelAggregatorCoordinator], SensorEnti
 
 
 class ParcelsIncomingSensor(_BaseListSensor):
-    _attr_name = "Parcels Incoming"
-    _attr_icon = "mdi:package-variant-closed"
+    _attr_translation_key = "incoming"
     _bucket = "incoming"
 
 
 class ParcelsOutgoingSensor(_BaseListSensor):
-    _attr_name = "Parcels Outgoing"
-    _attr_icon = "mdi:package-variant-closed"
+    _attr_translation_key = "outgoing"
     _bucket = "outgoing"
     _list_attr = "shipments"
 
 
 class ParcelsDeliveredSensor(_BaseListSensor):
-    _attr_name = "Parcels Delivered"
-    _attr_icon = "mdi:package-variant"
+    _attr_translation_key = "delivered"
     _bucket = "delivered"
 
 
 class ParcelsAwaitingPickupSensor(_BaseListSensor):
-    _attr_name = "Parcels Awaiting Pickup"
-    _attr_icon = "mdi:store-clock"
+    _attr_translation_key = "awaiting_pickup"
     _bucket = "awaiting_pickup"
 
 
@@ -113,8 +110,8 @@ class ParcelsNextDeliverySensor(
 ):
     """Earliest expected delivery datetime across all known carriers."""
 
-    _attr_name = "Parcels Next Delivery"
-    _attr_icon = "mdi:clock-fast"
+    _attr_has_entity_name = True
+    _attr_translation_key = "next_delivery"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 
     def __init__(self, coordinator: ParcelAggregatorCoordinator) -> None:

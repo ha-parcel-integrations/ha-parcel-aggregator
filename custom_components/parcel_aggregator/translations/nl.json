@@ -10,5 +10,30 @@
     "abort": {
       "already_configured": "De pakket-aggregator is al ingesteld."
     }
+  },
+  "entity": {
+    "sensor": {
+      "incoming": {
+        "name": "Binnenkomend"
+      },
+      "outgoing": {
+        "name": "Uitgaand"
+      },
+      "delivered": {
+        "name": "Bezorgd"
+      },
+      "awaiting_pickup": {
+        "name": "Klaar voor afhalen"
+      },
+      "next_delivery": {
+        "name": "Eerstvolgende bezorging"
+      }
+    }
+  },
+  "issues": {
+    "no_sources": {
+      "title": "Geen pakketbezorger-integraties gevonden",
+      "description": "De pakket-aggregator heeft geen bronsensoren gevonden. Installeer minimaal één van de ondersteunde integraties ({carriers}), zorg dat die is geauthenticeerd en herlaad daarna de pakket-aggregator."
+    }
   }
 }

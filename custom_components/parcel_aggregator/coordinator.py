@@ -8,10 +8,13 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import ATTR_KEY_BY_BUCKET, DOMAIN, KNOWN_CARRIERS, SOURCE_SUFFIXES
+
+NO_SOURCES_ISSUE_ID = "no_sources"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -137,11 +140,18 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER.debug(
                 "Parcel Aggregator watching %d source entities", len(watched)
             )
+            ir.async_delete_issue(self.hass, DOMAIN, NO_SOURCES_ISSUE_ID)
         else:
-            _LOGGER.info(
-                "Parcel Aggregator started with no source entities — install or "
-                "reload one of the carrier integrations (%s) and reload this one",
-                ", ".join(KNOWN_CARRIERS),
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                NO_SOURCES_ISSUE_ID,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key=NO_SOURCES_ISSUE_ID,
+                translation_placeholders={
+                    "carriers": ", ".join(KNOWN_CARRIERS.values()),
+                },
             )
         self.async_set_updated_data(self._compute())
 

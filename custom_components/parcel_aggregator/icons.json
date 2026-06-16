@@ -1,0 +1,21 @@
+{
+  "entity": {
+    "sensor": {
+      "incoming": {
+        "default": "mdi:package-variant-closed"
+      },
+      "outgoing": {
+        "default": "mdi:package-variant-closed"
+      },
+      "delivered": {
+        "default": "mdi:package-variant"
+      },
+      "awaiting_pickup": {
+        "default": "mdi:store-clock"
+      },
+      "next_delivery": {
+        "default": "mdi:clock-fast"
+      }
+    }
+  }
+}

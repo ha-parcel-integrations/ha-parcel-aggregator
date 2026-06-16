@@ -10,5 +10,30 @@
     "abort": {
       "already_configured": "Parcel Aggregator is already set up."
     }
+  },
+  "entity": {
+    "sensor": {
+      "incoming": {
+        "name": "Incoming"
+      },
+      "outgoing": {
+        "name": "Outgoing"
+      },
+      "delivered": {
+        "name": "Delivered"
+      },
+      "awaiting_pickup": {
+        "name": "Awaiting pickup"
+      },
+      "next_delivery": {
+        "name": "Next delivery"
+      }
+    }
+  },
+  "issues": {
+    "no_sources": {
+      "title": "No carrier integrations found",
+      "description": "Parcel Aggregator did not detect any source sensors. Install at least one of the supported carrier integrations ({carriers}), make sure it is authenticated, then reload Parcel Aggregator to pick it up."
+    }
   }
 }
