@@ -1,0 +1,90 @@
+# Working in this repository
+
+This is a Home Assistant custom integration that rolls up parcel counts
+and next-delivery timestamps from the DHL, PostNL and DPD integrations
+into a single set of sensors. Distributed via HACS; not part of HA core.
+
+## Always consult HA developer documentation
+
+Home Assistant's integration patterns evolve continuously. **Do not rely
+on memory of past patterns** — fetch the canonical page before changing
+a topic area, and check the developer blog before introducing anything
+you only "know" from training data.
+
+| When you change | Fetch first |
+|---|---|
+| Entity properties, naming, lifecycle, attributes | https://developers.home-assistant.io/docs/core/entity/ |
+| Sensor specifics (state/device classes, units) | https://developers.home-assistant.io/docs/core/entity/sensor |
+| Config flow, options flow, reauth, reconfigure | https://developers.home-assistant.io/docs/config_entries_config_flow_handler |
+| DataUpdateCoordinator pattern | https://developers.home-assistant.io/docs/integration_fetching_data |
+| Quality scale rules | https://developers.home-assistant.io/docs/core/integration-quality-scale |
+| Diagnostics | https://developers.home-assistant.io/docs/integration_diagnostics |
+| Repair issues | https://developers.home-assistant.io/docs/core/platform/repairs |
+| Translations (entity names, issues, exceptions) | https://developers.home-assistant.io/docs/internationalization/core |
+| Brand registration | https://developers.home-assistant.io/docs/creating_integration_brand |
+
+### Recent developer-facing changes
+
+Before introducing patterns you only know from training data, check:
+
+- https://developers.home-assistant.io/blog — API deprecations, new
+  patterns, breaking changes. Recent posts trump older recollection.
+- https://github.com/home-assistant/architecture/discussions — design
+  decisions in flight that have not made it into stable docs yet.
+
+## What is already in place
+
+The integration is aligned with the **gold** quality scale tier. Don't
+re-propose these as improvements:
+
+- `quality_scale: "gold"` in manifest, minimum HA version `2024.7.0`
+- `ConfigEntry.runtime_data` (the coordinator is the runtime data)
+- `PARALLEL_UPDATES = 0` in `sensor.py`
+- `has_entity_name = True` on all sensors + `translation_key` per
+  sensor; entity names come from `strings.json` and `translations/{en,nl}.json`
+- Icons via `icons.json` (per-`translation_key`), not `_attr_icon`
+- Repair issue (`ir.async_create_issue` / `async_delete_issue`) when no
+  source carrier integrations are detected; clears on reload once a
+  carrier appears
+- Diagnostics handler in `diagnostics.py` that lists watched source
+  entities and redacts per-parcel PII fields (`barcode`, `sender`,
+  `pickup_point`, `url`, `raw`) from the aggregated data dump
+- Tests for config flow, sensor properties, diagnostics, repair issue,
+  and setup/unload lifecycle — coverage 98%
+- `_unrecorded_attributes = frozenset({"parcels", "shipments"})` on the
+  base list sensor — the aggregated lists are kept out of the recorder
+  long-term tables
+
+## What was deliberately skipped
+
+- **No `_attr_attribution`**: the aggregator does not talk to any single
+  upstream provider, so a single attribution string would be misleading.
+  Attribution lives on the per-carrier integrations.
+- **Platinum tier**: requires `mypy --strict` clean throughout the
+  module and ≥95% coverage. Doable but the user chose to stop at gold.
+
+## Repo-specific quirks
+
+- **No external API**: the coordinator subscribes to *source sensor
+  state changes* (`async_track_state_change_event`) instead of polling.
+  Freshness is bound to how often each carrier integration polls.
+- **Source discovery is one-shot at setup**, in `async_setup`. New
+  carrier integrations installed afterwards do **not** appear until
+  the aggregator is reloaded. This is intentional but the limitation
+  must be honored — don't refactor the discovery onto every poll.
+- **Source contract**: `KNOWN_CARRIERS` maps HA integration domains to
+  human labels; `SOURCE_SUFFIXES` maps `unique_id` suffixes to buckets;
+  `ATTR_KEY_BY_BUCKET` maps buckets to the attribute key on the source
+  sensor (`parcels` vs `shipments`). All three live in `const.py` and
+  must stay in sync — adding a new carrier means updating all three.
+- **No tags published yet**: this repo lives on `main` only; HACS users
+  pull directly from `main`. Version in `manifest.json` is informative,
+  not load-bearing for HACS.
+
+## Running tests
+
+```
+python -m pytest tests/ --cov=custom_components.parcel_aggregator
+```
+
+Coverage is currently 98%. Gold tier targets ≥95% — keep it above 95%.
