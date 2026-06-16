@@ -10,26 +10,30 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import ParcelAggregatorConfigEntry
 from .const import DOMAIN
 from .coordinator import ParcelAggregatorCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
+# The coordinator drives updates via source state-change events; HA's
+# per-entity throttling adds nothing.
+PARALLEL_UPDATES = 0
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: ParcelAggregatorConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Parcel Aggregator sensor entities from a config entry."""
-    coordinator: ParcelAggregatorCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     async_add_entities(
         [
             ParcelsIncomingSensor(coordinator),
