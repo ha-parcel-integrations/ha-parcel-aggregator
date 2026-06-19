@@ -9,15 +9,9 @@ from custom_components.parcel_aggregator.const import DOMAIN
 
 @pytest.mark.asyncio
 async def test_user_flow_creates_entry(hass):
-    """A single-step flow with no input creates the entry."""
+    """The no-input flow creates the entry immediately, no confirm form."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
-    )
-    assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "user"
-
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], user_input={}
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Parcel Aggregator"
