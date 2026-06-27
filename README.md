@@ -46,13 +46,13 @@ If you install a new carrier integration after Parcel Aggregator was set up, **r
 
 ## Supported sources
 
-| Integration | Repository | Status enum | Events |
-|-------------|-----------|---|---|
-| DHL NL | [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) | ✅ since 2.0.0 | ✅ since 2.0.0 |
-| PostNL | [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) | planned for 4.0.0 | planned for 4.0.0 |
-| DPD | [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) | ✅ since 2.0.0 | ✅ since 2.0.0 |
+| Integration | Repository |
+|-------------|------------|
+| DHL NL | [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) |
+| PostNL | [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) |
+| DPD | [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) |
 
-The state-aggregation layer works with every installed carrier regardless. Events only flow for carriers in the ✅ column — others get added automatically once they ship the canonical event contract.
+All three carrier integrations publish the canonical `ParcelStatus` enum and the canonical parcel events, so the state-aggregation and event re-emit layers both cover every installed carrier without further configuration.
 
 ## Requirements
 
@@ -110,6 +110,7 @@ The `parcels` attribute on each summary sensor contains every parcel from every 
 | `carrier` | string | `"DHL"`, `"PostNL"`, or `"DPD"` |
 | `barcode` | string | Parcel tracking number |
 | `sender` | string \| null | Sender name (e.g. webshop) |
+| `receiver` | string \| null | Recipient name. Filled by DHL and DPD today; PostNL surfaces it in a later release. |
 | `status` | `ParcelStatus` | Canonical status — see the [status reference](#parcel-status-reference) |
 | `raw_status` | string \| null | Original carrier-specific status string (for power users) |
 | `delivered` | bool | Whether the parcel has been delivered |
@@ -119,6 +120,8 @@ The `parcels` attribute on each summary sensor contains every parcel from every 
 | `pickup` | bool | Destined for a pickup point rather than a home address |
 | `pickup_point` | string \| null | ServicePoint / Point / ParcelShop name when `pickup` is true |
 | `url` | string \| null | Deep link to the parcel's tracking page |
+| `weight` | float \| null | Parcel weight in kilograms. Filled by DPD today; DHL's consumer API doesn't expose it (always `null`); PostNL surfaces it in a later release. |
+| `dimensions` | dict \| null | Parcel dimensions in centimeters: `{length, width, height, text}` — `text` is a pre-formatted `"L x W x H cm"` string. Same coverage as `weight`. |
 
 The carrier-specific `raw` payload is stripped to keep aggregator-attribute size small — open the per-carrier sensor if you need the original payload.
 
@@ -145,7 +148,7 @@ The coordinator fires unified events on the HA event bus when something interest
 
 | Event | When | Payload |
 |---|---|---|
-| `parcel_aggregator_parcel_registered` | A carrier announces a new parcel | The full normalised parcel dict (`carrier`, `barcode`, `sender`, `status`, `raw_status`, `delivered`, `delivered_at`, `planned_from`, `planned_to`, `pickup`, `pickup_point`, `url`) |
+| `parcel_aggregator_parcel_registered` | A carrier announces a new parcel | The full normalised parcel dict (`carrier`, `barcode`, `sender`, `receiver`, `status`, `raw_status`, `delivered`, `delivered_at`, `planned_from`, `planned_to`, `pickup`, `pickup_point`, `url`, `weight`, `dimensions`) |
 | `parcel_aggregator_parcel_status_changed` | A known parcel's `status` value changes | Same payload as above plus `old_status` and `new_status` |
 
 The carrier-specific `raw` payload is stripped from the event to keep it small. Inspect the source carrier's own event (e.g. `dhl_nl_parcel_status_changed`) if you need the raw payload.
@@ -174,7 +177,6 @@ in those repos.
 - The aggregator only discovers source sensors **at setup time**. Install a new carrier integration → reload Parcel Aggregator before its sensors appear.
 - The `next_delivery` timestamp is only as precise as the underlying carrier exposes. DPD gives a day window (midnight to midnight) until Follow My Parcel fires shortly before delivery — then it narrows to an hour window. Use it for "today/tomorrow" alerts rather than counting on precise hour windows being available all day.
 - The `awaiting_pickup` sensor counts every parcel destined for a pickup point, including ones that are still en route. DHL exposes a distinct `at_pickup_point` status on the parcel dict for parcels that have *actually arrived* at the pickup point — DPD's API does not surface this signal yet. The sensor stays on the lowest-common-denominator semantics for now.
-- Events only flow for carriers that have adopted the canonical event contract (see the [Supported sources](#supported-sources) table).
 
 ## Disclaimer
 
