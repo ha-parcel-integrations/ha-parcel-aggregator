@@ -214,3 +214,32 @@ async def test_unload_stops_event_reemission(hass):
     await hass.async_block_till_done()
 
     assert captured == []
+
+
+@pytest.mark.asyncio
+async def test_gls_registered_event_is_reemitted_unified(hass):
+    """A gls_parcel_registered event triggers parcel_aggregator_parcel_registered."""
+    entry = _add_entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    captured = _capture(hass, EVENT_PARCEL_REGISTERED)
+
+    hass.bus.async_fire(
+        "gls_parcel_registered",
+        {
+            "carrier": "GLS",
+            "barcode": "0085105093278",
+            "status": ParcelStatus.REGISTERED,
+            "raw_status": "Aangekondigd bij GLS",
+            "raw": {"big": "payload"},
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert len(captured) == 1
+    payload = captured[0].data
+    assert payload["carrier"] == "GLS"
+    assert payload["barcode"] == "0085105093278"
+    assert payload["status"] == ParcelStatus.REGISTERED
+    assert "raw" not in payload
