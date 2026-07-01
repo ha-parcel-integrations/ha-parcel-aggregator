@@ -1,7 +1,7 @@
 # Working in this repository
 
 This is a Home Assistant custom integration that rolls up parcel counts
-and next-delivery timestamps from the DHL, PostNL and DPD integrations
+and next-delivery timestamps from the DHL, PostNL, DPD and GLS integrations
 into a single set of sensors. Distributed via HACS; not part of HA core.
 
 ## Always consult HA developer documentation
@@ -57,7 +57,7 @@ re-propose these as improvements:
 ### Adopted in 1.0.0 (do not refactor away)
 
 - **Canonical `ParcelStatus` enum** in `const.py` — mirrors the enum
-  the per-carrier integrations (DHL, DPD, PostNL) publish on the
+  the per-carrier integrations (DHL, DPD, PostNL, GLS) publish on the
   `status` field of each normalised parcel. Kept in sync across all
   four repositories so cross-carrier automations can target
   `status: out_for_delivery` regardless of source.
@@ -123,10 +123,13 @@ re-propose these as improvements:
 - **No external API**: the coordinator subscribes to *source sensor
   state changes* (`async_track_state_change_event`) instead of polling.
   Freshness is bound to how often each carrier integration polls.
-- **Source discovery is one-shot at setup**, in `async_setup`. New
-  carrier integrations installed afterwards do **not** appear until
-  the aggregator is reloaded. This is intentional but the limitation
-  must be honored — don't refactor the discovery onto every poll.
+- **Source discovery is event-driven, not per-poll.** `async_setup`
+  discovers once (`_refresh_sources`) and then listens to
+  `EVENT_ENTITY_REGISTRY_UPDATED`: when a known carrier's source sensor
+  is added or removed, discovery re-runs, the state-change subscription
+  is rebuilt and the repair issue is created/cleared — no manual reload.
+  Do NOT refactor the discovery onto every poll/compute; the registry
+  listener is the only re-discovery trigger.
 - **Source contract**: `KNOWN_CARRIERS` maps HA integration domains to
   human labels; `SOURCE_SUFFIXES` maps `unique_id` suffixes to buckets;
   `ATTR_KEY_BY_BUCKET` maps buckets to the attribute key on the source

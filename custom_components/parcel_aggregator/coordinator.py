@@ -163,16 +163,50 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             bucket: {} for bucket in SOURCE_SUFFIXES.values()
         }
         self._unsub_listener: CALLBACK_TYPE | None = None
+        self._unsub_registry_listener: CALLBACK_TYPE | None = None
         self._unsub_event_listeners: list[CALLBACK_TYPE] = []
 
     async def async_setup(self) -> None:
-        """Discover source entities and subscribe to their state changes."""
-        self._discover()
-        watched = [
+        """Discover source entities and subscribe to their state changes.
+
+        Discovery also re-runs whenever a known carrier's source sensor is
+        added to or removed from the entity registry, so installing a carrier
+        *after* the aggregator does not require a manual reload.
+        """
+        self._refresh_sources()
+        self._subscribe_carrier_events()
+        self._unsub_registry_listener = self.hass.bus.async_listen(
+            er.EVENT_ENTITY_REGISTRY_UPDATED, self._on_registry_updated
+        )
+        self.async_set_updated_data(self._compute())
+
+    async def async_shutdown(self) -> None:
+        if self._unsub_listener is not None:
+            self._unsub_listener()
+            self._unsub_listener = None
+        if self._unsub_registry_listener is not None:
+            self._unsub_registry_listener()
+            self._unsub_registry_listener = None
+        for unsub in self._unsub_event_listeners:
+            unsub()
+        self._unsub_event_listeners.clear()
+
+    def _watched_entity_ids(self) -> set[str]:
+        return {
             entity_id
             for bucket in self._sources.values()
             for entity_id in bucket
-        ]
+        }
+
+    @callback
+    def _refresh_sources(self) -> None:
+        """(Re)discover source entities and (re)subscribe to their changes."""
+        if self._unsub_listener is not None:
+            self._unsub_listener()
+            self._unsub_listener = None
+        self._sources = {bucket: {} for bucket in SOURCE_SUFFIXES.values()}
+        self._discover()
+        watched = list(self._watched_entity_ids())
         if watched:
             self._unsub_listener = async_track_state_change_event(
                 self.hass, watched, self._on_source_state_change
@@ -193,16 +227,23 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     "carriers": ", ".join(KNOWN_CARRIERS.values()),
                 },
             )
-        self._subscribe_carrier_events()
+
+    @callback
+    def _on_registry_updated(self, event: Event) -> None:
+        """Re-discover when a carrier source sensor (dis)appears."""
+        if not self._registry_event_is_relevant(event):
+            return
+        self._refresh_sources()
         self.async_set_updated_data(self._compute())
 
-    async def async_shutdown(self) -> None:
-        if self._unsub_listener is not None:
-            self._unsub_listener()
-            self._unsub_listener = None
-        for unsub in self._unsub_event_listeners:
-            unsub()
-        self._unsub_event_listeners.clear()
+    def _registry_event_is_relevant(self, event: Event) -> bool:
+        entity_id: str = event.data.get("entity_id", "")
+        if event.data.get("action") == "remove":
+            return entity_id in self._watched_entity_ids()
+        entry = er.async_get(self.hass).async_get(entity_id)
+        if entry is None or entry.platform not in KNOWN_CARRIERS:
+            return False
+        return any(entry.unique_id.endswith(suffix) for suffix in SOURCE_SUFFIXES)
 
     def _subscribe_carrier_events(self) -> None:
         """Listen to per-carrier parcel events and re-emit them unified.

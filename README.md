@@ -1,6 +1,6 @@
 # Parcel Aggregator
 
-A Home Assistant custom integration that rolls up parcel counts, next-delivery timestamps, and parcel-event notifications from the DHL, PostNL, and DPD integrations into a single set of sensors and a single unified event stream.
+A Home Assistant custom integration that rolls up parcel counts, next-delivery timestamps, and parcel-event notifications from the DHL, PostNL, DPD and GLS integrations into a single set of sensors and a single unified event stream.
 
 ## Contents
 
@@ -23,7 +23,7 @@ A Home Assistant custom integration that rolls up parcel counts, next-delivery t
 
 ## Use cases
 
-- A single dashboard card that shows how many parcels you expect today across DHL, PostNL and DPD without juggling per-carrier sensors.
+- A single dashboard card that shows how many parcels you expect today across DHL, PostNL, DPD and GLS without juggling per-carrier sensors.
 - Carrier-agnostic automations — write one trigger like *"when any parcel is out for delivery"* instead of three per-carrier copies.
 - Automations like *"announce when a parcel is awaiting pickup at a service point"* or *"remind me an hour before the earliest delivery"* that you write once and they cover every carrier.
 - A unified parcel list you can iterate over in templates or custom cards.
@@ -35,7 +35,7 @@ The aggregator does **not** talk to any carrier API itself. It reads the sensors
 - Summed count sensors with a per-carrier breakdown on the attributes
 - A unified `parcel_aggregator_parcel_*` event stream so one automation can react to any carrier
 
-Carriers you have not installed are silently skipped. If you add a carrier integration later, **reload Parcel Aggregator** (Settings → Devices & Services → Parcel Aggregator → ⋮ → Reload) so it picks up the new sensors.
+Carriers you have not installed are silently skipped. If you add a carrier integration later, the aggregator picks up its sensors automatically — no reload needed.
 
 ## Supported sources
 
@@ -44,6 +44,7 @@ Carriers you have not installed are silently skipped. If you add a carrier integ
 | DHL NL | [peternijssen/ha-dhl-nl](https://github.com/peternijssen/ha-dhl-nl) |
 | PostNL | [peternijssen/ha-postnl](https://github.com/peternijssen/ha-postnl) |
 | DPD | [peternijssen/ha-dpd](https://github.com/peternijssen/ha-dpd) |
+| GLS | [peternijssen/ha-gls](https://github.com/peternijssen/ha-gls) |
 
 ## Requirements
 
@@ -70,11 +71,11 @@ Carriers you have not installed are silently skipped. If you add a carrier integ
 2. Search for **Parcel Aggregator**
 3. The entry is created immediately — no credentials needed
 
-The aggregator discovers source entities at setup time. If you add a new carrier integration later, **reload Parcel Aggregator** to pick it up.
+The aggregator discovers source entities at setup time and keeps watching the entity registry, so carrier integrations you add or remove later are picked up automatically.
 
 ## Options
 
-This integration has no configurable options. It auto-discovers carrier source sensors at setup time and listens for state-change events from them.
+This integration has no configurable options. It auto-discovers carrier source sensors (also when a carrier is installed later) and listens for state-change events from them.
 
 ## Removal
 
@@ -159,13 +160,12 @@ Third-party cards that work with these sensors:
 
 ## Known limitations
 
-- The aggregator only discovers source sensors **at setup time**. Install a new carrier integration → reload Parcel Aggregator before its sensors appear.
 - The `next_delivery` timestamp is only as precise as the underlying carrier exposes. DPD gives a day window (midnight to midnight) until Follow My Parcel fires shortly before delivery — then it narrows to an hour window. Use it for "today/tomorrow" alerts rather than counting on precise hour windows being available all day.
 - The `awaiting_pickup` sensor counts every parcel destined for a pickup point, including ones that are still en route. DHL exposes a distinct `at_pickup_point` status on the parcel dict for parcels that have *actually arrived* at the pickup point — DPD's API does not surface this signal yet. The sensor stays on the lowest-common-denominator semantics for now.
 
 ## Disclaimer
 
-This is an independent, community-built project with no affiliation, endorsement, or connection to DHL, PostNL, DPD, or any of their subsidiaries.
+This is an independent, community-built project with no affiliation, endorsement, or connection to DHL, PostNL, DPD, GLS, or any of their subsidiaries.
 
 ## Contributing
 
