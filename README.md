@@ -99,7 +99,7 @@ The `parcels` attribute on each summary sensor contains every parcel from every 
 
 | Key | Type | Meaning |
 |---|---|---|
-| `carrier` | string | `"DHL"`, `"PostNL"`, or `"DPD"` |
+| `carrier` | string | `"DHL"`, `"PostNL"`, `"DPD"`, or `"GLS"` |
 | `barcode` | string | Parcel tracking number |
 | `sender` | string \| null | Sender name (e.g. webshop) |
 | `receiver` | string \| null | Recipient name |
