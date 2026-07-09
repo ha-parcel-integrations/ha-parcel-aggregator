@@ -6,7 +6,7 @@
 type: conditional
 conditions:
   - condition: numeric_state
-    entity: sensor.parcel_aggregator_incoming
+    entity: sensor.parcel_aggregator_incoming_parcels
     above: 0
 card:
   type: markdown
@@ -23,7 +23,7 @@ card:
       'unknown': 'status onbekend'
     } -%}
     {%- set ns = namespace(rows=[]) -%}
-    {%- for p in state_attr('sensor.parcel_aggregator_incoming', 'parcels') or [] -%}
+    {%- for p in state_attr('sensor.parcel_aggregator_incoming_parcels', 'parcels') or [] -%}
       {%- set sender = p.sender or 'Onbekende afzender' -%}
       {%- set status = labels.get(p.status, p.status) -%}
       {%- set afzender = '[%s](%s)' | format(sender, p.url) if p.url else sender -%}
