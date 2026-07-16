@@ -57,6 +57,7 @@ CARRIER_EVENT_PREFIXES: dict[str, str] = {
 
 EVENT_PARCEL_REGISTERED = f"{DOMAIN}_parcel_registered"
 EVENT_PARCEL_STATUS_CHANGED = f"{DOMAIN}_parcel_status_changed"
+EVENT_PARCEL_DELIVERED = f"{DOMAIN}_parcel_delivered"
 EVENT_PARCEL_DELIVERY_TIME_CHANGED = f"{DOMAIN}_parcel_delivery_time_changed"
 EVENT_OUTGOING_PARCEL_STATUS_CHANGED = f"{DOMAIN}_outgoing_parcel_status_changed"
 EVENT_OUTGOING_PARCEL_DELIVERED = f"{DOMAIN}_outgoing_parcel_delivered"

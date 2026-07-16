@@ -18,6 +18,7 @@ from .const import (
     DOMAIN,
     EVENT_OUTGOING_PARCEL_DELIVERED,
     EVENT_OUTGOING_PARCEL_STATUS_CHANGED,
+    EVENT_PARCEL_DELIVERED,
     EVENT_PARCEL_DELIVERY_TIME_CHANGED,
     EVENT_PARCEL_REGISTERED,
     EVENT_PARCEL_STATUS_CHANGED,
@@ -252,8 +253,9 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         Each carrier that has adopted the canonical event contract fires
         ``<prefix>_parcel_registered``, ``<prefix>_parcel_status_changed``,
-        ``<prefix>_parcel_delivery_time_changed`` and — for parcels the
-        account holder sends — ``<prefix>_outgoing_parcel_status_changed`` and
+        ``<prefix>_parcel_delivered``, ``<prefix>_parcel_delivery_time_changed``
+        and — for parcels the account holder sends —
+        ``<prefix>_outgoing_parcel_status_changed`` and
         ``<prefix>_outgoing_parcel_delivered`` on the HA event bus. The
         aggregator forwards each under its own ``parcel_aggregator_``-prefixed
         name so users only need one listener for "any parcel from any carrier".
@@ -268,6 +270,12 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self.hass.bus.async_listen(
                     f"{prefix}_parcel_status_changed",
                     self._on_carrier_status_changed,
+                )
+            )
+            self._unsub_event_listeners.append(
+                self.hass.bus.async_listen(
+                    f"{prefix}_parcel_delivered",
+                    self._on_carrier_delivered,
                 )
             )
             self._unsub_event_listeners.append(
@@ -298,6 +306,10 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.hass.bus.async_fire(
             EVENT_PARCEL_STATUS_CHANGED, strip_raw(dict(event.data))
         )
+
+    @callback
+    def _on_carrier_delivered(self, event: Event) -> None:
+        self.hass.bus.async_fire(EVENT_PARCEL_DELIVERED, strip_raw(dict(event.data)))
 
     @callback
     def _on_carrier_delivery_time_changed(self, event: Event) -> None:

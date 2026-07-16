@@ -7,6 +7,7 @@ from custom_components.parcel_aggregator.const import (
     EVENT_OUTGOING_PARCEL_DELIVERED,
     EVENT_OUTGOING_PARCEL_STATUS_CHANGED,
     EVENT_PARCEL_DELIVERY_TIME_CHANGED,
+    EVENT_PARCEL_DELIVERED,
     EVENT_PARCEL_REGISTERED,
     EVENT_PARCEL_STATUS_CHANGED,
     ParcelStatus,
@@ -89,6 +90,34 @@ async def test_dhl_status_changed_event_is_reemitted_unified(hass):
     payload = captured[0].data
     assert payload["old_status"] == ParcelStatus.IN_TRANSIT
     assert payload["new_status"] == ParcelStatus.OUT_FOR_DELIVERY
+    assert "raw" not in payload
+
+
+@pytest.mark.asyncio
+async def test_dhl_delivered_event_is_reemitted_unified(hass):
+    """A dhl_nl_parcel_delivered event triggers the unified parcel_delivered event."""
+    entry = _add_entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    captured = _capture(hass, EVENT_PARCEL_DELIVERED)
+
+    hass.bus.async_fire(
+        "dhl_nl_parcel_delivered",
+        {
+            "carrier": "DHL",
+            "barcode": "BARCODE-9",
+            "status": ParcelStatus.DELIVERED,
+            "delivered": True,
+            "raw": {"big": "payload"},
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert len(captured) == 1
+    payload = captured[0].data
+    assert payload["barcode"] == "BARCODE-9"
+    assert payload["status"] == ParcelStatus.DELIVERED
     assert "raw" not in payload
 
 

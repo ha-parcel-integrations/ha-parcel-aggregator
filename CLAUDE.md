@@ -64,7 +64,8 @@ re-propose these as improvements:
   `status: out_for_delivery` regardless of source.
 - **Carrier event re-emit layer** — the coordinator subscribes to every
   `<prefix>_parcel_registered` / `<prefix>_parcel_status_changed` /
-  `<prefix>_parcel_delivery_time_changed` **and** the outgoing pair
+  `<prefix>_parcel_delivered` / `<prefix>_parcel_delivery_time_changed`
+  **and** the outgoing pair
   `<prefix>_outgoing_parcel_status_changed` /
   `<prefix>_outgoing_parcel_delivered` published by carriers listed in
   `CARRIER_EVENT_PREFIXES`, re-firing each under the matching
