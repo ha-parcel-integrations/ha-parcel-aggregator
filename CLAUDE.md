@@ -153,6 +153,17 @@ re-propose these as improvements:
   dict-order iteration — delivered outgoing parcels would be mis-bucketed
   as incoming delivered.
 
+## Shared conventions
+
+Workflow, commit style, versioning and release notes live in
+[`ha-parcel-integrations/.github/CONVENTIONS.md`](https://github.com/ha-parcel-integrations/.github/blob/main/CONVENTIONS.md)
+and are not repeated here. In short: single-line commit messages, semver, tags
+without a `v` prefix, maintainer-only merges, user-facing release notes.
+
+The structural baseline every carrier repo shares is the
+[`ha-carrier-template`](https://github.com/ha-parcel-integrations/ha-carrier-template)
+scaffold. The aggregator is not a carrier, so most of it does not apply — it maps no statuses and therefore ships no *Unrecognised parcel status* issue template.
+
 ## Running tests
 
 ```
