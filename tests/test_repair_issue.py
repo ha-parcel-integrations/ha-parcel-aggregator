@@ -1,6 +1,5 @@
 """Tests for the no-source-carriers repair issue."""
 import pytest
-
 from homeassistant.helpers import issue_registry as ir
 
 from custom_components.parcel_aggregator.const import DOMAIN

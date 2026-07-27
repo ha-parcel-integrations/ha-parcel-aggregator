@@ -1,6 +1,5 @@
 """Tests for the Parcel Aggregator config flow."""
 import pytest
-
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
 

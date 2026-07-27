@@ -1,6 +1,5 @@
 """Tests for the Parcel Aggregator setup/unload entry points."""
 import pytest
-
 from homeassistant.config_entries import ConfigEntryState
 
 from custom_components.parcel_aggregator.const import DOMAIN

@@ -85,26 +85,36 @@ class _BaseListSensor(CoordinatorEntity[ParcelAggregatorCoordinator], SensorEnti
 
 
 class ParcelsIncomingSensor(_BaseListSensor):
+    """ParcelsIncomingSensor."""
+
     _attr_translation_key = "incoming"
     _bucket = "incoming"
 
 
 class ParcelsOutgoingSensor(_BaseListSensor):
+    """ParcelsOutgoingSensor."""
+
     _attr_translation_key = "outgoing"
     _bucket = "outgoing"
 
 
 class ParcelsDeliveredSensor(_BaseListSensor):
+    """ParcelsDeliveredSensor."""
+
     _attr_translation_key = "delivered"
     _bucket = "delivered"
 
 
 class ParcelsOutgoingDeliveredSensor(_BaseListSensor):
+    """ParcelsOutgoingDeliveredSensor."""
+
     _attr_translation_key = "outgoing_delivered"
     _bucket = "outgoing_delivered"
 
 
 class ParcelsAwaitingPickupSensor(_BaseListSensor):
+    """ParcelsAwaitingPickupSensor."""
+
     _attr_translation_key = "awaiting_pickup"
     _bucket = "awaiting_pickup"
 
@@ -124,6 +134,7 @@ class ParcelsNextDeliverySensor(
     _unrecorded_attributes = frozenset({"parcel"})
 
     def __init__(self, coordinator: ParcelAggregatorCoordinator) -> None:
+        """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{DOMAIN}_next_delivery"
         self._attr_device_info = _build_device_info()
@@ -133,10 +144,12 @@ class ParcelsNextDeliverySensor(
 
     @property
     def native_value(self) -> datetime | None:
+        """Return the native value of the sensor."""
         return self._info().get("value")
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the extra state attributes."""
         info = self._info()
         by_carrier = info.get("by_carrier", {})
         return {

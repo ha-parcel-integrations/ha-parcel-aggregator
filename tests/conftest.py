@@ -1,6 +1,5 @@
 """pytest configuration for the Parcel Aggregator test suite."""
 import pytest
-
 from pytest_homeassistant_custom_component.plugins import hass  # noqa: F401
 
 

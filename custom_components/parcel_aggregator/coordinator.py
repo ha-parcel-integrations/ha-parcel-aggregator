@@ -154,6 +154,7 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Tracks source carrier sensors and emits aggregated state."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+        """Initialize the coordinator."""
         super().__init__(
             hass,
             _LOGGER,
@@ -184,6 +185,7 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.async_set_updated_data(self._compute())
 
     async def async_shutdown(self) -> None:
+        """Cancel scheduled work and shut the coordinator down."""
         if self._unsub_listener is not None:
             self._unsub_listener()
             self._unsub_listener = None
