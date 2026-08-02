@@ -31,20 +31,20 @@ class ParcelStatus(StrEnum):
 # Integration domains the aggregator knows how to read entities from.
 # Maps the HA integration domain → human-friendly carrier label used in attributes.
 KNOWN_CARRIERS: dict[str, str] = {
-    "dhl_nl": "DHL",
-    "postnl": "PostNL",
-    "dpd": "DPD",
-    "gls": "GLS",
-    "dragonfly": "Dragonfly",
-    "trunkrs": "Trunkrs",
     "cainiao": "Cainiao",
-    "hermes": "Hermes",
     "correos": "Correos",
-    "packeta": "Packeta",
-    "vinted_go": "Vinted Go",
+    "dhl_nl": "DHL",
+    "dpd": "DPD",
+    "dragonfly": "Dragonfly",
+    "gls": "GLS",
     "helthjem": "Helthjem",
+    "hermes": "Hermes",
+    "packeta": "Packeta",
+    "postnl": "PostNL",
     "postnord": "PostNord",
     "sameday": "Sameday",
+    "trunkrs": "Trunkrs",
+    "vinted_go": "Vinted Go",
 }
 
 # Per-carrier event-name prefix on the HA event bus. Carriers that have
@@ -57,20 +57,20 @@ KNOWN_CARRIERS: dict[str, str] = {
 # pass-through still works regardless. Add the carrier's domain once it
 # ships the event contract.
 CARRIER_EVENT_PREFIXES: dict[str, str] = {
+    "cainiao": "cainiao",
+    "correos": "correos",
     "dhl_nl": "dhl_nl",
     "dpd": "dpd",
-    "postnl": "postnl",
-    "gls": "gls",
     "dragonfly": "dragonfly",
-    "trunkrs": "trunkrs",
-    "cainiao": "cainiao",
-    "hermes": "hermes",
-    "correos": "correos",
-    "packeta": "packeta",
-    "vinted_go": "vinted_go",
+    "gls": "gls",
     "helthjem": "helthjem",
+    "hermes": "hermes",
+    "packeta": "packeta",
+    "postnl": "postnl",
     "postnord": "postnord",
     "sameday": "sameday",
+    "trunkrs": "trunkrs",
+    "vinted_go": "vinted_go",
 }
 
 EVENT_PARCEL_REGISTERED = f"{DOMAIN}_parcel_registered"
