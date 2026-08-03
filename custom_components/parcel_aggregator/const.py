@@ -44,6 +44,7 @@ KNOWN_CARRIERS: dict[str, str] = {
     "postnl": "PostNL",
     "postnord": "PostNord",
     "sameday": "Sameday",
+    "swiss_post": "Swiss Post",
     "trunkrs": "Trunkrs",
     "vinted_go": "Vinted Go",
 }
@@ -71,6 +72,7 @@ CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "postnl": "postnl",
     "postnord": "postnord",
     "sameday": "sameday",
+    "swiss_post": "swiss_post",
     "trunkrs": "trunkrs",
     "vinted_go": "vinted_go",
 }
