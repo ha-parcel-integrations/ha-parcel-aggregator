@@ -23,9 +23,9 @@ variables:
 actions:
   - action: notify.mobile_app
     data:
-      title: "{{ carrier_styles[trigger.event.data.carrier].emoji }} {{ trigger.event.data.carrier }} onderweg"
+      title: "{{ carrier_styles[trigger.event.data.carrier].emoji }} {{ trigger.event.data.carrier }} on the way"
       message: >-
-        {{ trigger.event.data.sender or 'Onbekende afzender' }} – {{ trigger.event.data.barcode }}
+        {{ trigger.event.data.sender or 'Unknown sender' }} – {{ trigger.event.data.barcode }}
       data:
         color: "{{ carrier_styles[trigger.event.data.carrier].color }}"
         clickAction: "{{ trigger.event.data.url }}"

@@ -17,7 +17,7 @@ triggers:
 actions:
   - action: notify.mobile_app
     data:
-      title: "Pakket onderweg vandaag ({{ trigger.event.data.carrier }})"
+      title: "Out for delivery today ({{ trigger.event.data.carrier }})"
       message: >-
         {{ trigger.event.data.sender }} – {{ trigger.event.data.barcode }}
       data:

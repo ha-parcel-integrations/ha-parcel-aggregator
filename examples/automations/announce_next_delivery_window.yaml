@@ -19,6 +19,6 @@ actions:
     data:
       entity_id: media_player.living_room
       message: >-
-        Pakket onderweg, verwacht rond
+        Parcel on its way, expected around
         {{ as_datetime(states('sensor.parcel_aggregator_next_delivery'))
            .strftime('%H:%M') }}.

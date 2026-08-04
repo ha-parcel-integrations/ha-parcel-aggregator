@@ -22,7 +22,7 @@ conditions:
 actions:
   - action: notify.mobile_app
     data:
-      title: "Pakketten vandaag"
+      title: "Parcels today"
       message: >-
         {% set by_carrier = state_attr('sensor.parcel_aggregator_incoming_parcels', 'by_carrier') or {} %}
         {% set parcels = state_attr('sensor.parcel_aggregator_incoming_parcels', 'parcels') or [] %}

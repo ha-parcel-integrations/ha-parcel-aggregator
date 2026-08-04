@@ -10,30 +10,30 @@ conditions:
     above: 0
 card:
   type: markdown
-  title: Pakketten onderweg
+  title: Active parcels
   content: >-
     {%- set labels = {
-      'registered': 'aangemeld',
-      'in_transit': 'onderweg',
-      'out_for_delivery': 'bezorging vandaag',
-      'at_pickup_point': 'klaar voor afhalen',
-      'delivered': 'bezorgd',
-      'problem': 'probleem',
-      'returning': 'retour naar afzender',
-      'unknown': 'status onbekend'
+      'registered': 'registered',
+      'in_transit': 'in transit',
+      'out_for_delivery': 'out for delivery',
+      'at_pickup_point': 'ready for collection',
+      'delivered': 'delivered',
+      'problem': 'problem',
+      'returning': 'returning to sender',
+      'unknown': 'status unknown'
     } -%}
     {%- set ns = namespace(rows=[]) -%}
     {%- for p in state_attr('sensor.parcel_aggregator_incoming_parcels', 'parcels') or [] -%}
-      {%- set sender = p.sender or 'Onbekende afzender' -%}
+      {%- set sender = p.sender or 'Unknown sender' -%}
       {%- set status = labels.get(p.status, p.status) -%}
-      {%- set afzender = '[%s](%s)' | format(sender, p.url) if p.url else sender -%}
+      {%- set sender_cell = '[%s](%s)' | format(sender, p.url) if p.url else sender -%}
       {%- if p.planned_from and p.planned_to -%}
-        {%- set verwacht = (as_timestamp(p.planned_from) | timestamp_custom('%a %-d %b %H:%M', true)) ~ '–' ~ (as_timestamp(p.planned_to) | timestamp_custom('%H:%M', true)) -%}
+        {%- set expected = (as_timestamp(p.planned_from) | timestamp_custom('%a %-d %b %H:%M', true)) ~ '–' ~ (as_timestamp(p.planned_to) | timestamp_custom('%H:%M', true)) -%}
       {%- elif p.planned_from -%}
-        {%- set verwacht = as_timestamp(p.planned_from) | timestamp_custom('%a %-d %b %H:%M', true) -%}
+        {%- set expected = as_timestamp(p.planned_from) | timestamp_custom('%a %-d %b %H:%M', true) -%}
       {%- else -%}
-        {%- set verwacht = '—' -%}
+        {%- set expected = '—' -%}
       {%- endif -%}
-      {%- set ns.rows = ns.rows + ['| %s | %s | %s | %s |' | format(p.carrier, afzender, status, verwacht)] -%}
+      {%- set ns.rows = ns.rows + ['| %s | %s | %s | %s |' | format(p.carrier, sender_cell, status, expected)] -%}
     {%- endfor -%}
-    {{ '| Vervoerder | Afzender | Status | Verwacht |\n| :-- | :-- | :-- | :-- |\n' ~ (ns.rows | join('\n')) }}
+    {{ '| Carrier | Sender | Status | Expected |\n| :-- | :-- | :-- | :-- |\n' ~ (ns.rows | join('\n')) }}
