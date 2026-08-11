@@ -31,6 +31,7 @@ class ParcelStatus(StrEnum):
 # Integration domains the aggregator knows how to read entities from.
 # Maps the HA integration domain → human-friendly carrier label used in attributes.
 KNOWN_CARRIERS: dict[str, str] = {
+    "an_post": "An Post",
     "budbee": "Budbee",
     "cainiao": "Cainiao",
     "correos": "Correos",
@@ -48,6 +49,7 @@ KNOWN_CARRIERS: dict[str, str] = {
     "planzer": "Planzer",
     "postnl": "PostNL",
     "postnord": "PostNord",
+    "quickpac": "Quickpac",
     "sameday": "Sameday",
     "sunyou": "SunYou",
     "swiss_post": "Swiss Post",
@@ -65,6 +67,7 @@ KNOWN_CARRIERS: dict[str, str] = {
 # pass-through still works regardless. Add the carrier's domain once it
 # ships the event contract.
 CARRIER_EVENT_PREFIXES: dict[str, str] = {
+    "an_post": "an_post",
     "budbee": "budbee",
     "cainiao": "cainiao",
     "correos": "correos",
@@ -82,6 +85,7 @@ CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "planzer": "planzer",
     "postnl": "postnl",
     "postnord": "postnord",
+    "quickpac": "quickpac",
     "sameday": "sameday",
     "sunyou": "sunyou",
     "swiss_post": "swiss_post",
