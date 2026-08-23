@@ -33,16 +33,6 @@ _LOGGER = logging.getLogger(__name__)
 _UNAVAILABLE_STATES = {"unavailable", "unknown", "", None}
 
 
-def parse_int_state(value: str | None) -> int | None:
-    """Convert a sensor state to ``int``, or ``None`` if unavailable/unparseable."""
-    if value in _UNAVAILABLE_STATES:
-        return None
-    try:
-        return int(float(value))  # type: ignore[arg-type]
-    except (TypeError, ValueError):
-        return None
-
-
 def parse_timestamp_state(value: str | None) -> datetime | None:
     """Convert an ISO 8601 timestamp string to ``datetime``, or ``None`` if unparseable.
 
@@ -61,20 +51,31 @@ def parse_timestamp_state(value: str | None) -> datetime | None:
     return dt
 
 
-def aggregate_sum(
-    samples: list[tuple[str, int | None]],
-) -> dict[str, Any]:
-    """Sum (carrier_label, int_value) samples into a total + per-carrier breakdown."""
-    total = 0
-    by_carrier: dict[str, int] = {}
-    any_available = False
-    for label, value in samples:
-        if value is None:
+def dedupe_parcels(parcels: list[dict]) -> list[dict]:
+    """Collapse parcels sharing a ``(carrier, barcode)`` key, keeping the first seen.
+
+    A parcel with shared visibility (e.g. two housemates' PostNL accounts both
+    seeing the same delivery) is reported by every source instance that can see
+    it. Without this, it would appear once per source instead of once overall.
+    """
+    seen: set[tuple[Any, Any]] = set()
+    deduped: list[dict] = []
+    for parcel in parcels:
+        key = (parcel.get("carrier"), parcel.get("barcode"))
+        if key in seen:
             continue
-        any_available = True
-        total += value
-        by_carrier[label] = by_carrier.get(label, 0) + value
-    return {"total": total, "by_carrier": by_carrier, "any_available": any_available}
+        seen.add(key)
+        deduped.append(parcel)
+    return deduped
+
+
+def count_by_carrier(parcels: list[dict]) -> dict[str, Any]:
+    """Count parcels into a total + per-carrier breakdown."""
+    by_carrier: dict[str, int] = {}
+    for parcel in parcels:
+        label = parcel.get("carrier") or "Unknown"
+        by_carrier[label] = by_carrier.get(label, 0) + 1
+    return {"total": len(parcels), "by_carrier": by_carrier}
 
 
 def strip_raw(parcel: dict) -> dict:
@@ -351,45 +352,52 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _compute(self) -> dict[str, Any]:
         incoming_parcels = sort_parcels_by_ts(
-            self._collect_parcels("incoming"), "planned_from"
+            dedupe_parcels(self._collect_parcels("incoming")), "planned_from"
         )
         outgoing_parcels = sort_parcels_by_ts(
-            self._collect_parcels("outgoing"), "planned_from"
+            dedupe_parcels(self._collect_parcels("outgoing")), "planned_from"
         )
         delivered_parcels = sort_parcels_by_ts(
-            self._collect_parcels("delivered"), "delivered_at", descending=True
+            dedupe_parcels(self._collect_parcels("delivered")),
+            "delivered_at",
+            descending=True,
         )
         outgoing_delivered_parcels = sort_parcels_by_ts(
-            self._collect_parcels("outgoing_delivered"), "delivered_at", descending=True
+            dedupe_parcels(self._collect_parcels("outgoing_delivered")),
+            "delivered_at",
+            descending=True,
         )
         return {
             "incoming": {
-                **self._sum_bucket("incoming"),
+                **count_by_carrier(incoming_parcels),
+                "any_available": self._any_available("incoming"),
                 "parcels": [strip_raw(p) for p in incoming_parcels],
             },
             "outgoing": {
-                **self._sum_bucket("outgoing"),
+                **count_by_carrier(outgoing_parcels),
+                "any_available": self._any_available("outgoing"),
                 "parcels": [strip_raw(p) for p in outgoing_parcels],
             },
             "delivered": {
-                **self._sum_bucket("delivered"),
+                **count_by_carrier(delivered_parcels),
+                "any_available": self._any_available("delivered"),
                 "parcels": [strip_raw(p) for p in delivered_parcels],
             },
             "outgoing_delivered": {
-                **self._sum_bucket("outgoing_delivered"),
+                **count_by_carrier(outgoing_delivered_parcels),
+                "any_available": self._any_available("outgoing_delivered"),
                 "parcels": [strip_raw(p) for p in outgoing_delivered_parcels],
             },
             "next_delivery": next_delivery_from(incoming_parcels),
             "awaiting_pickup": awaiting_pickup_from(incoming_parcels),
         }
 
-    def _sum_bucket(self, bucket: str) -> dict[str, Any]:
-        samples: list[tuple[str, int | None]] = []
-        for entity_id, platform in self._sources[bucket].items():
+    def _any_available(self, bucket: str) -> bool:
+        for entity_id in self._sources[bucket]:
             state = self.hass.states.get(entity_id)
-            value = parse_int_state(state.state if state else None)
-            samples.append((KNOWN_CARRIERS.get(platform, platform), value))
-        return aggregate_sum(samples)
+            if state is not None and state.state not in _UNAVAILABLE_STATES:
+                return True
+        return False
 
     def _collect_parcels(self, bucket: str) -> list[dict]:
         attr_key = ATTR_KEY_BY_BUCKET[bucket]

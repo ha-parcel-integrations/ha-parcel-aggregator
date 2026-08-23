@@ -4,10 +4,10 @@ from datetime import datetime, timezone
 import pytest
 
 from custom_components.parcel_aggregator.coordinator import (
-    aggregate_sum,
     awaiting_pickup_from,
+    count_by_carrier,
+    dedupe_parcels,
     next_delivery_from,
-    parse_int_state,
     parse_timestamp_state,
     sort_parcels_by_ts,
     strip_raw,
@@ -39,30 +39,6 @@ def _parcel(
         "url": None,
         "raw": raw if raw is not None else {"_": "carrier-specific"},
     }
-
-
-# ---------------------------------------------------------------------------
-# parse_int_state
-# ---------------------------------------------------------------------------
-
-
-def test_parse_int_parses_plain_number():
-    assert parse_int_state("5") == 5
-
-
-def test_parse_int_handles_float_strings():
-    assert parse_int_state("5.0") == 5
-
-
-def test_parse_int_returns_none_for_unavailable():
-    assert parse_int_state("unavailable") is None
-    assert parse_int_state("unknown") is None
-    assert parse_int_state("") is None
-    assert parse_int_state(None) is None
-
-
-def test_parse_int_returns_none_for_garbage():
-    assert parse_int_state("not a number") is None
 
 
 # ---------------------------------------------------------------------------
@@ -100,39 +76,54 @@ def test_parse_timestamp_treats_naive_iso_as_utc():
 
 
 # ---------------------------------------------------------------------------
-# aggregate_sum
+# dedupe_parcels
 # ---------------------------------------------------------------------------
 
 
-def test_sum_aggregates_across_carriers():
-    result = aggregate_sum([("DHL", 2), ("PostNL", 3), ("DPD", 1)])
-    assert result["total"] == 6
-    assert result["by_carrier"] == {"DHL": 2, "PostNL": 3, "DPD": 1}
-    assert result["any_available"] is True
+def test_dedupe_collapses_same_carrier_and_barcode():
+    # Two source instances (e.g. two PostNL accounts with shared visibility)
+    # both reporting the same parcel — regression for issue #7.
+    a = _parcel(carrier="PostNL", barcode="AAAA1111111111", sender="Account Owner A")
+    b = _parcel(carrier="PostNL", barcode="AAAA1111111111", sender="Shop One")
+    assert dedupe_parcels([a, b]) == [a]
 
 
-def test_sum_sums_multiple_accounts_per_carrier():
-    result = aggregate_sum([("PostNL", 2), ("PostNL", 3)])
-    assert result["total"] == 5
-    assert result["by_carrier"] == {"PostNL": 5}
+def test_dedupe_keeps_distinct_barcodes():
+    a = _parcel(carrier="PostNL", barcode="AAAA1111111111")
+    b = _parcel(carrier="PostNL", barcode="BBBB2222222222")
+    assert dedupe_parcels([a, b]) == [a, b]
 
 
-def test_sum_skips_none_values():
-    result = aggregate_sum([("DHL", 2), ("PostNL", None), ("DPD", 3)])
-    assert result["total"] == 5
-    assert result["by_carrier"] == {"DHL": 2, "DPD": 3}
-    assert result["any_available"] is True
+def test_dedupe_keeps_same_barcode_across_different_carriers():
+    a = _parcel(carrier="PostNL", barcode="SHARED")
+    b = _parcel(carrier="DHL", barcode="SHARED")
+    assert dedupe_parcels([a, b]) == [a, b]
 
 
-def test_sum_marks_unavailable_when_no_sources():
-    result = aggregate_sum([])
-    assert result == {"total": 0, "by_carrier": {}, "any_available": False}
+def test_dedupe_keeps_two_distinct_parcels_from_two_accounts_same_carrier():
+    # Two PostNL accounts with two genuinely different parcels — not a dupe.
+    a = _parcel(carrier="PostNL", barcode="AAAA1111111111")
+    b = _parcel(carrier="PostNL", barcode="BBBB2222222222")
+    assert dedupe_parcels([a, b]) == [a, b]
 
 
-def test_sum_marks_unavailable_when_all_none():
-    result = aggregate_sum([("DHL", None), ("PostNL", None)])
-    assert result["any_available"] is False
-    assert result["total"] == 0
+# ---------------------------------------------------------------------------
+# count_by_carrier
+# ---------------------------------------------------------------------------
+
+
+def test_count_by_carrier_counts_across_carriers():
+    parcels = [
+        _parcel(carrier="DHL", barcode="1"),
+        _parcel(carrier="DHL", barcode="2"),
+        _parcel(carrier="PostNL", barcode="3"),
+    ]
+    result = count_by_carrier(parcels)
+    assert result == {"total": 3, "by_carrier": {"DHL": 2, "PostNL": 1}}
+
+
+def test_count_by_carrier_empty_list():
+    assert count_by_carrier([]) == {"total": 0, "by_carrier": {}}
 
 
 # ---------------------------------------------------------------------------
@@ -222,6 +213,59 @@ def test_sort_parcels_missing_timestamps_stay_at_end_when_descending():
 
 def test_sort_parcels_empty_input_returns_empty_list():
     assert sort_parcels_by_ts([], "planned_from") == []
+
+
+# ---------------------------------------------------------------------------
+# Coordinator integration: dedup across two source instances
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_shared_parcel_across_two_accounts_is_deduped(hass):
+    """Regression for issue #7: two PostNL accounts with shared visibility
+    both report the same barcode — the aggregator must count it once."""
+    from homeassistant.helpers import entity_registry as er
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.parcel_aggregator.const import DOMAIN
+
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
+    entry.add_to_hass(hass)
+
+    registry = er.async_get(hass)
+    source_entity_ids = []
+    for account in ("account-a", "account-b"):
+        postnl_entry = MockConfigEntry(domain="postnl", unique_id=account)
+        postnl_entry.add_to_hass(hass)
+        registered = registry.async_get_or_create(
+            domain="sensor",
+            platform="postnl",
+            unique_id=f"{account}_incoming_parcels",
+            config_entry=postnl_entry,
+        )
+        source_entity_ids.append(registered.entity_id)
+
+    shared_parcel_via_a = _parcel(
+        carrier="PostNL", barcode="AAAA1111111111", sender="Account Owner A"
+    )
+    shared_parcel_via_b = _parcel(
+        carrier="PostNL", barcode="AAAA1111111111", sender="Shop One"
+    )
+    hass.states.async_set(
+        source_entity_ids[0], "1", {"parcels": [shared_parcel_via_a]}
+    )
+    hass.states.async_set(
+        source_entity_ids[1], "1", {"parcels": [shared_parcel_via_b]}
+    )
+
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    data = entry.runtime_data.data
+    assert data["incoming"]["total"] == 1
+    assert data["incoming"]["by_carrier"] == {"PostNL": 1}
+    assert len(data["incoming"]["parcels"]) == 1
+    assert data["incoming"]["parcels"][0]["barcode"] == "AAAA1111111111"
 
 
 # ---------------------------------------------------------------------------
