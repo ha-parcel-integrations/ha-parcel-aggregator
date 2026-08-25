@@ -10,6 +10,11 @@ from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 llm_helpers = pytest.importorskip("homeassistant.helpers.llm")
+# The domain-platform-discovery mechanism (LLMTools, async_get_tools(hass,
+# llm_context, api_id)) lives in this newer, separate module — it can lag
+# behind homeassistant.helpers.llm, which is what llm.py's own ImportError
+# guard actually keys off. Both must be present for these tests to apply.
+llm_component = pytest.importorskip("homeassistant.components.llm")
 LLM_API_ASSIST = llm_helpers.LLM_API_ASSIST
 IntentTool = llm_helpers.IntentTool
 LLMContext = llm_helpers.LLMContext
