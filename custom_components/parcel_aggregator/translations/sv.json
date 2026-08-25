@@ -1,0 +1,50 @@
+{
+  "assist": {
+    "bucket": {
+      "incoming": {
+        "one": "inkommande paket",
+        "other": "inkommande paket"
+      },
+      "delivered": {
+        "one": "levererat paket",
+        "other": "levererade paket"
+      },
+      "awaiting_pickup": {
+        "one": "paket som väntar på avhämtning",
+        "other": "paket som väntar på avhämtning"
+      }
+    },
+    "status": {
+      "registered": "just registrerat",
+      "in_transit": "på väg",
+      "out_for_delivery": "levereras idag",
+      "at_pickup_point": "väntar på ett utlämningsställe",
+      "delivered": "levererat",
+      "returning": "skickas i retur",
+      "problem": "har ett leveransproblem",
+      "unknown": "status okänd"
+    },
+    "no_parcels": "Du har inga {label}.",
+    "summary": "Du har {count} {label}: {items}.",
+    "join_last": "och",
+    "unknown_carrier": "Okänd",
+    "parcel_with_sender": "ett {carrier}-paket från {sender}",
+    "parcel_without_sender": "ett {carrier}-paket",
+    "expected_between": "väntas {day} mellan {start} och {end}",
+    "expected_around": "väntas {day} runt {start}",
+    "day_today": "idag",
+    "day_tomorrow": "imorgon",
+    "day_weekday": "på {weekday}",
+    "weekday": {
+      "0": "måndag",
+      "1": "tisdag",
+      "2": "onsdag",
+      "3": "torsdag",
+      "4": "fredag",
+      "5": "lördag",
+      "6": "söndag"
+    },
+    "not_set_up": "Parcel Aggregator är inte konfigurerad.",
+    "not_exposed": "De paketen är inte exponerade för den här assistenten."
+  }
+}

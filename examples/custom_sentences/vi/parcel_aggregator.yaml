@@ -1,0 +1,28 @@
+# Copy this file to config/custom_sentences/vi/parcel_aggregator.yaml, then
+# restart Home Assistant (or Developer Tools -> YAML -> reload "Custom
+# sentences"). This teaches the built-in (non-LLM) Assist agent to answer
+# "what is it" style follow-ups with the full parcel breakdown, not just the
+# bucket sensor's bare count.
+#
+# Machine-translated starting point, not reviewed by a native speaker — feel
+# free to correct phrasing or add your own. See ../../../README.md#assist--voice-support
+# for background.
+language: "vi"
+intents:
+  ParcelAggregatorGetDetails:
+    data:
+      - sentences:
+            - "tôi sẽ nhận được kiện hàng nào (hôm nay|)"
+            - "cái gì đang được giao (hôm nay|)"
+        slots:
+          bucket: "incoming"
+      - sentences:
+            - "kiện hàng nào đã được giao"
+            - "(hôm nay|) tôi đã nhận được gì"
+        slots:
+          bucket: "delivered"
+      - sentences:
+            - "kiện hàng nào đang chờ lấy"
+            - "cái gì đang chờ ở điểm lấy hàng"
+        slots:
+          bucket: "awaiting_pickup"

@@ -1,0 +1,28 @@
+# Copy this file to config/custom_sentences/ro/parcel_aggregator.yaml, then
+# restart Home Assistant (or Developer Tools -> YAML -> reload "Custom
+# sentences"). This teaches the built-in (non-LLM) Assist agent to answer
+# "what is it" style follow-ups with the full parcel breakdown, not just the
+# bucket sensor's bare count.
+#
+# Machine-translated starting point, not reviewed by a native speaker — feel
+# free to correct phrasing or add your own. See ../../../README.md#assist--voice-support
+# for background.
+language: "ro"
+intents:
+  ParcelAggregatorGetDetails:
+    data:
+      - sentences:
+            - "ce colete primesc (azi|)"
+            - "ce se livrează (azi|)"
+        slots:
+          bucket: "incoming"
+      - sentences:
+            - "ce colete au fost livrate"
+            - "ce am primit (azi|)"
+        slots:
+          bucket: "delivered"
+      - sentences:
+            - "ce colete așteaptă ridicare"
+            - "ce așteaptă la un punct de ridicare"
+        slots:
+          bucket: "awaiting_pickup"

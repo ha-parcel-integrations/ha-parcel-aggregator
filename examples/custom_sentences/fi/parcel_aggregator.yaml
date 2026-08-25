@@ -1,0 +1,28 @@
+# Copy this file to config/custom_sentences/fi/parcel_aggregator.yaml, then
+# restart Home Assistant (or Developer Tools -> YAML -> reload "Custom
+# sentences"). This teaches the built-in (non-LLM) Assist agent to answer
+# "what is it" style follow-ups with the full parcel breakdown, not just the
+# bucket sensor's bare count.
+#
+# Machine-translated starting point, not reviewed by a native speaker — feel
+# free to correct phrasing or add your own. See ../../../README.md#assist--voice-support
+# for background.
+language: "fi"
+intents:
+  ParcelAggregatorGetDetails:
+    data:
+      - sentences:
+            - "mitä paketteja saan (tänään|)"
+            - "mitä toimitetaan (tänään|)"
+        slots:
+          bucket: "incoming"
+      - sentences:
+            - "mitkä paketit on toimitettu"
+            - "mitä sain (tänään|)"
+        slots:
+          bucket: "delivered"
+      - sentences:
+            - "mitkä paketit odottavat noutoa"
+            - "mikä odottaa noutopisteessä"
+        slots:
+          bucket: "awaiting_pickup"

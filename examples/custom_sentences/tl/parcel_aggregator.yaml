@@ -1,0 +1,28 @@
+# Copy this file to config/custom_sentences/tl/parcel_aggregator.yaml, then
+# restart Home Assistant (or Developer Tools -> YAML -> reload "Custom
+# sentences"). This teaches the built-in (non-LLM) Assist agent to answer
+# "what is it" style follow-ups with the full parcel breakdown, not just the
+# bucket sensor's bare count.
+#
+# Machine-translated starting point, not reviewed by a native speaker — feel
+# free to correct phrasing or add your own. See ../../../README.md#assist--voice-support
+# for background.
+language: "tl"
+intents:
+  ParcelAggregatorGetDetails:
+    data:
+      - sentences:
+            - "anong mga package ang matatanggap ko (ngayon|)"
+            - "ano ang ihahatid (ngayon|)"
+        slots:
+          bucket: "incoming"
+      - sentences:
+            - "anong mga package ang naihatid na"
+            - "ano ang natanggap ko (ngayon|)"
+        slots:
+          bucket: "delivered"
+      - sentences:
+            - "anong mga package ang naghihintay ma-pickup"
+            - "ano ang naghihintay sa pickup point"
+        slots:
+          bucket: "awaiting_pickup"

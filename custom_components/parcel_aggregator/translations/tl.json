@@ -1,0 +1,50 @@
+{
+  "assist": {
+    "bucket": {
+      "incoming": {
+        "one": "papasok na package",
+        "other": "mga papasok na package"
+      },
+      "delivered": {
+        "one": "naihatid na package",
+        "other": "mga naihatid na package"
+      },
+      "awaiting_pickup": {
+        "one": "package na naghihintay ma-pickup",
+        "other": "mga package na naghihintay ma-pickup"
+      }
+    },
+    "status": {
+      "registered": "bagong rehistrado",
+      "in_transit": "nasa daan",
+      "out_for_delivery": "ihahatid ngayon",
+      "at_pickup_point": "naghihintay sa pickup point",
+      "delivered": "naihatid na",
+      "returning": "ibinabalik",
+      "problem": "may problema sa paghahatid",
+      "unknown": "hindi alam ang status"
+    },
+    "no_parcels": "Wala kang {label}.",
+    "summary": "May {count} kang {label}: {items}.",
+    "join_last": "at",
+    "unknown_carrier": "Hindi alam",
+    "parcel_with_sender": "isang {carrier} package mula sa {sender}",
+    "parcel_without_sender": "isang {carrier} package",
+    "expected_between": "inaasahan {day} sa pagitan ng {start} at {end}",
+    "expected_around": "inaasahan {day} bandang {start}",
+    "day_today": "ngayon",
+    "day_tomorrow": "bukas",
+    "day_weekday": "sa {weekday}",
+    "weekday": {
+      "0": "Lunes",
+      "1": "Martes",
+      "2": "Miyerkules",
+      "3": "Huwebes",
+      "4": "Biyernes",
+      "5": "Sabado",
+      "6": "Linggo"
+    },
+    "not_set_up": "Hindi pa naka-set up ang Parcel Aggregator.",
+    "not_exposed": "Hindi nakalantad ang mga package na ito sa assistant na ito."
+  }
+}

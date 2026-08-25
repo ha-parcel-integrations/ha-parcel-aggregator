@@ -1,0 +1,29 @@
+# Copy this file to config/custom_sentences/en/parcel_aggregator.yaml, then
+# restart Home Assistant (or Developer Tools -> YAML -> reload "Custom
+# sentences"). This teaches the built-in (non-LLM) Assist agent to answer
+# "what is it" style follow-ups with the full parcel breakdown, not just the
+# bucket sensor's bare count.
+#
+# See ../../../README.md#assist--voice-support for background, and to check
+# whether an LLM-based Assist agent needs this at all (it doesn't).
+language: "en"
+intents:
+  ParcelAggregatorGetDetails:
+    data:
+      - sentences:
+          - "what (packages|parcels) (do I have|am I receiving) (today|)"
+          - "which (packages|parcels) (do I have|are coming) (today|)"
+          - "what is being delivered (today|)"
+          - "what (packages|parcels) are on (their|the) way"
+        slots:
+          bucket: "incoming"
+      - sentences:
+          - "what (packages|parcels) have (been delivered|arrived)"
+          - "what did I receive (today|)"
+        slots:
+          bucket: "delivered"
+      - sentences:
+          - "what (packages|parcels) are waiting for pickup"
+          - "what is waiting at a pickup point"
+        slots:
+          bucket: "awaiting_pickup"

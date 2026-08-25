@@ -1,0 +1,50 @@
+{
+  "assist": {
+    "bucket": {
+      "incoming": {
+        "one": "saabuv pakk",
+        "other": "saabuvat pakki"
+      },
+      "delivered": {
+        "one": "kohale toimetatud pakk",
+        "other": "kohale toimetatud pakki"
+      },
+      "awaiting_pickup": {
+        "one": "väljastuspunkti ootav pakk",
+        "other": "väljastuspunkti ootavat pakki"
+      }
+    },
+    "status": {
+      "registered": "just registreeritud",
+      "in_transit": "teel",
+      "out_for_delivery": "täna kohaletoimetamisel",
+      "at_pickup_point": "ootab väljastuspunktis",
+      "delivered": "kohale toimetatud",
+      "returning": "tagastamisel",
+      "problem": "on tarneprobleem",
+      "unknown": "olek teadmata"
+    },
+    "no_parcels": "Sul ei ole {label}.",
+    "summary": "Sul on {count} {label}: {items}.",
+    "join_last": "ja",
+    "unknown_carrier": "Teadmata",
+    "parcel_with_sender": "{carrier} pakk saatjalt {sender}",
+    "parcel_without_sender": "{carrier} pakk",
+    "expected_between": "oodatakse {day} kell {start}–{end}",
+    "expected_around": "oodatakse {day} kell umbes {start}",
+    "day_today": "täna",
+    "day_tomorrow": "homme",
+    "day_weekday": "{weekday}",
+    "weekday": {
+      "0": "esmaspäeval",
+      "1": "teisipäeval",
+      "2": "kolmapäeval",
+      "3": "neljapäeval",
+      "4": "reedel",
+      "5": "laupäeval",
+      "6": "pühapäeval"
+    },
+    "not_set_up": "Parcel Aggregator pole seadistatud.",
+    "not_exposed": "Neid pakke pole selle abilisega jagatud."
+  }
+}

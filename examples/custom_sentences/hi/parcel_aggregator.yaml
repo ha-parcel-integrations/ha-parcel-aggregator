@@ -1,0 +1,28 @@
+# Copy this file to config/custom_sentences/hi/parcel_aggregator.yaml, then
+# restart Home Assistant (or Developer Tools -> YAML -> reload "Custom
+# sentences"). This teaches the built-in (non-LLM) Assist agent to answer
+# "what is it" style follow-ups with the full parcel breakdown, not just the
+# bucket sensor's bare count.
+#
+# Machine-translated starting point, not reviewed by a native speaker — feel
+# free to correct phrasing or add your own. See ../../../README.md#assist--voice-support
+# for background.
+language: "hi"
+intents:
+  ParcelAggregatorGetDetails:
+    data:
+      - sentences:
+            - "आज कौन से पार्सल मिलेंगे"
+            - "(आज|) क्या डिलीवर हो रहा है"
+        slots:
+          bucket: "incoming"
+      - sentences:
+            - "कौन से पार्सल डिलीवर हुए"
+            - "(आज|) मुझे क्या मिला"
+        slots:
+          bucket: "delivered"
+      - sentences:
+            - "कौन से पार्सल पिकअप का इंतज़ार कर रहे हैं"
+            - "पिकअप पॉइंट पर क्या इंतज़ार कर रहा है"
+        slots:
+          bucket: "awaiting_pickup"

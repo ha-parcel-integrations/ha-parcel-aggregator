@@ -1,0 +1,30 @@
+# Kopieer dit bestand naar config/custom_sentences/nl/parcel_aggregator.yaml
+# en herstart Home Assistant (of Developer Tools -> YAML -> "Custom
+# sentences" herladen). Hiermee leert de ingebouwde (niet-LLM) Assist-agent
+# om vervolgvragen als "wat is het?" te beantwoorden met de volledige
+# pakketgegevens, in plaats van alleen het aantal van de sensor.
+#
+# Zie ../../../README.md#assist--voice-support voor achtergrond, en om te
+# checken of een LLM-gebaseerde Assist-agent dit bestand uberhaupt nodig
+# heeft (nee dus).
+language: "nl"
+intents:
+  ParcelAggregatorGetDetails:
+    data:
+      - sentences:
+          - "welke pakketten (krijg|ontvang) ik (vandaag|)"
+          - "wat (krijg|ontvang) ik (vandaag|)"
+          - "wat wordt er (vandaag|) bezorgd"
+          - "welke pakketten zijn onderweg"
+        slots:
+          bucket: "incoming"
+      - sentences:
+          - "welke pakketten zijn bezorgd"
+          - "wat heb ik (vandaag|) ontvangen"
+        slots:
+          bucket: "delivered"
+      - sentences:
+          - "welke pakketten liggen klaar om op te halen"
+          - "wat ligt er klaar bij het afhaalpunt"
+        slots:
+          bucket: "awaiting_pickup"

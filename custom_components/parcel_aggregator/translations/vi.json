@@ -1,0 +1,50 @@
+{
+  "assist": {
+    "bucket": {
+      "incoming": {
+        "one": "kiện hàng sắp đến",
+        "other": "kiện hàng sắp đến"
+      },
+      "delivered": {
+        "one": "kiện hàng đã giao",
+        "other": "kiện hàng đã giao"
+      },
+      "awaiting_pickup": {
+        "one": "kiện hàng đang chờ lấy",
+        "other": "kiện hàng đang chờ lấy"
+      }
+    },
+    "status": {
+      "registered": "vừa được đăng ký",
+      "in_transit": "đang vận chuyển",
+      "out_for_delivery": "sẽ giao hôm nay",
+      "at_pickup_point": "đang chờ tại điểm lấy hàng",
+      "delivered": "đã giao",
+      "returning": "đang được hoàn trả",
+      "problem": "gặp sự cố giao hàng",
+      "unknown": "không rõ trạng thái"
+    },
+    "no_parcels": "Bạn không có {label} nào.",
+    "summary": "Bạn có {count} {label}: {items}.",
+    "join_last": "và",
+    "unknown_carrier": "Không rõ",
+    "parcel_with_sender": "một kiện hàng {carrier} từ {sender}",
+    "parcel_without_sender": "một kiện hàng {carrier}",
+    "expected_between": "dự kiến {day} trong khoảng {start} đến {end}",
+    "expected_around": "dự kiến {day} vào khoảng {start}",
+    "day_today": "hôm nay",
+    "day_tomorrow": "ngày mai",
+    "day_weekday": "vào {weekday}",
+    "weekday": {
+      "0": "thứ Hai",
+      "1": "thứ Ba",
+      "2": "thứ Tư",
+      "3": "thứ Năm",
+      "4": "thứ Sáu",
+      "5": "thứ Bảy",
+      "6": "Chủ Nhật"
+    },
+    "not_set_up": "Parcel Aggregator chưa được thiết lập.",
+    "not_exposed": "Các kiện hàng này chưa được chia sẻ với trợ lý này."
+  }
+}

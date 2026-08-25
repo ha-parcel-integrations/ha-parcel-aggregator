@@ -21,6 +21,7 @@ A Home Assistant custom integration that rolls up parcel counts, next-delivery t
 - [Sensors](#sensors)
 - [Parcel status reference](#parcel-status-reference)
 - [Events](#events)
+- [Assist / voice support](#assist--voice-support)
 - [Examples](#examples)
 - [Known limitations](#known-limitations)
 - [Disclaimer](#disclaimer)
@@ -155,6 +156,19 @@ Unified events on the HA event bus let one automation react to changes from any 
 | `parcel_aggregator_outgoing_parcel_delivered` | An outgoing parcel reaches the recipient | The full parcel dict |
 
 See [`examples/automations/`](examples/automations/) for ready-to-paste carrier-agnostic event automations.
+
+## Assist / voice support
+
+Asking Assist "which packages do I receive today" reads back the bucket sensor's bare *state* ("You will receive 1 package today"). A follow-up like "what is it?" used to get a generic non-answer, because the carrier/sender/status/expected-time details live in the `parcels` attribute, which Assist doesn't read out on its own. Parcel Aggregator ships a dedicated `ParcelAggregatorGetDetails` intent that answers with the full breakdown instead, e.g. *"You have 1 incoming parcel: a PostNL parcel from Bol.com, expected today between 14:00 and 16:00."* It covers the `incoming`, `delivered` and `awaiting_pickup` buckets, and only answers for a bucket whose sensor is exposed to the calling assistant.
+
+`incoming` holds every active parcel, not just today's — a parcel arriving next week shows up here too. Rather than filtering (which would silently drop parcels that don't have a known ETA yet), each parcel's timing is always spelled out relative to today: *"expected today between 14:00 and 16:00"*, *"expected tomorrow around 09:00"*, or *"expected on Thursday around 10:00"* for anything further out.
+
+**Languages**: en, nl, de, fr, es, pt, it, pl, cs, sk, sl, hr, bg, ro, hu, fi, sv, da, nb, et, lv, lt, uk, ga, hi, ms, id, tl, th, vi — matching every language already used somewhere in the [ha-parcel-integrations](https://github.com/ha-parcel-integrations) suite, plus the languages of Shopee Xpress's markets. Wording lives in [`translations/<lang>.json`](custom_components/parcel_aggregator/translations/) under the `assist` key; adding another language is a translation-file contribution, not a code change. Beyond en/nl these are machine-translated starting points, not reviewed by native speakers — corrections welcome.
+
+How you trigger it depends on your Assist agent:
+
+- **LLM-based Assist agent** (OpenAI, Google Generative AI, a local LLM, …): nothing to configure. The integration registers an LLM tool automatically once a bucket sensor is exposed, so a natural follow-up question like "what is it?" just works. Requires Home Assistant 2026.8 or newer — on older cores this tool is silently unavailable, with no impact on the rest of the integration.
+- **Built-in (free, local) Assist agent**: this agent matches fixed sentence patterns, which a custom integration cannot register on your behalf. Copy [`examples/custom_sentences/en/parcel_aggregator.yaml`](examples/custom_sentences/en/parcel_aggregator.yaml) (or the [Dutch version](examples/custom_sentences/nl/parcel_aggregator.yaml)) into `config/custom_sentences/<language>/`, then restart Home Assistant or reload custom sentences from **Developer Tools → YAML**. Feel free to add your own phrasings — the shipped list is a starting point, not exhaustive.
 
 ## Examples
 

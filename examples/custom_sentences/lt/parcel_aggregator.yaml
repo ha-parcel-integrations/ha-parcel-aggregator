@@ -1,0 +1,28 @@
+# Copy this file to config/custom_sentences/lt/parcel_aggregator.yaml, then
+# restart Home Assistant (or Developer Tools -> YAML -> reload "Custom
+# sentences"). This teaches the built-in (non-LLM) Assist agent to answer
+# "what is it" style follow-ups with the full parcel breakdown, not just the
+# bucket sensor's bare count.
+#
+# Machine-translated starting point, not reviewed by a native speaker — feel
+# free to correct phrasing or add your own. See ../../../README.md#assist--voice-support
+# for background.
+language: "lt"
+intents:
+  ParcelAggregatorGetDetails:
+    data:
+      - sentences:
+            - "kokias siuntas gausiu (šiandien|)"
+            - "kas pristatoma (šiandien|)"
+        slots:
+          bucket: "incoming"
+      - sentences:
+            - "kokios siuntos pristatytos"
+            - "ką gavau (šiandien|)"
+        slots:
+          bucket: "delivered"
+      - sentences:
+            - "kokios siuntos laukia atsiėmimo"
+            - "kas laukia atsiėmimo punkte"
+        slots:
+          bucket: "awaiting_pickup"
