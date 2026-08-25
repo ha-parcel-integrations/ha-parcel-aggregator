@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "paquete entrante",
+      "other": "paquetes entrantes"
+    },
+    "delivered": {
+      "one": "paquete entregado",
+      "other": "paquetes entregados"
+    },
+    "awaiting_pickup": {
+      "one": "paquete a la espera de recogida",
+      "other": "paquetes a la espera de recogida"
+    }
+  },
+  "status": {
+    "registered": "recién registrado",
+    "in_transit": "en tránsito",
+    "out_for_delivery": "en reparto hoy",
+    "at_pickup_point": "esperando en un punto de recogida",
+    "delivered": "entregado",
+    "returning": "en devolución",
+    "problem": "tiene un problema de entrega",
+    "unknown": "estado desconocido"
+  },
+  "no_parcels": "No tienes {label}.",
+  "summary": "Tienes {count} {label}: {items}.",
+  "join_last": "y",
+  "unknown_carrier": "Desconocido",
+  "parcel_with_sender": "un paquete de {carrier} de {sender}",
+  "parcel_without_sender": "un paquete de {carrier}",
+  "expected_between": "se espera {day} entre las {start} y las {end}",
+  "expected_around": "se espera {day} sobre las {start}",
+  "day_today": "hoy",
+  "day_tomorrow": "mañana",
+  "day_weekday": "el {weekday}",
+  "weekday": {
+    "0": "lunes",
+    "1": "martes",
+    "2": "miércoles",
+    "3": "jueves",
+    "4": "viernes",
+    "5": "sábado",
+    "6": "domingo"
+  },
+  "not_set_up": "Parcel Aggregator no está configurado.",
+  "not_exposed": "Esos paquetes no están expuestos a este asistente."
+}

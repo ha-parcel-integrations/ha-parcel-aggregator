@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "gaunama siunta",
+      "other": "gaunamos siuntos"
+    },
+    "delivered": {
+      "one": "pristatyta siunta",
+      "other": "pristatytos siuntos"
+    },
+    "awaiting_pickup": {
+      "one": "siunta, laukianti atsiėmimo",
+      "other": "siuntos, laukiančios atsiėmimo"
+    }
+  },
+  "status": {
+    "registered": "ką tik užregistruota",
+    "in_transit": "kelyje",
+    "out_for_delivery": "šiandien pristatoma",
+    "at_pickup_point": "laukia atsiėmimo punkte",
+    "delivered": "pristatyta",
+    "returning": "grąžinama",
+    "problem": "turi pristatymo problemą",
+    "unknown": "būsena nežinoma"
+  },
+  "no_parcels": "Neturi {label}.",
+  "summary": "Turi {count} {label}: {items}.",
+  "join_last": "ir",
+  "unknown_carrier": "Nežinoma",
+  "parcel_with_sender": "{carrier} siunta nuo {sender}",
+  "parcel_without_sender": "{carrier} siunta",
+  "expected_between": "laukiama {day} nuo {start} iki {end}",
+  "expected_around": "laukiama {day} apie {start}",
+  "day_today": "šiandien",
+  "day_tomorrow": "rytoj",
+  "day_weekday": "{weekday}",
+  "weekday": {
+    "0": "pirmadienį",
+    "1": "antradienį",
+    "2": "trečiadienį",
+    "3": "ketvirtadienį",
+    "4": "penktadienį",
+    "5": "šeštadienį",
+    "6": "sekmadienį"
+  },
+  "not_set_up": "Parcel Aggregator nesukonfigūruotas.",
+  "not_exposed": "Šios siuntos nepasiekiamos šiam asistentui."
+}

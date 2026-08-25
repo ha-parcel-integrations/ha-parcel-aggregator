@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "prihajajoča pošiljka",
+      "other": "prihajajoče pošiljke"
+    },
+    "delivered": {
+      "one": "dostavljena pošiljka",
+      "other": "dostavljene pošiljke"
+    },
+    "awaiting_pickup": {
+      "one": "pošiljka, ki čaka na prevzem",
+      "other": "pošiljke, ki čakajo na prevzem"
+    }
+  },
+  "status": {
+    "registered": "pravkar prijavljena",
+    "in_transit": "na poti",
+    "out_for_delivery": "danes v dostavi",
+    "at_pickup_point": "čaka na prevzemnem mestu",
+    "delivered": "dostavljena",
+    "returning": "se vrača",
+    "problem": "ima težavo z dostavo",
+    "unknown": "status neznan"
+  },
+  "no_parcels": "Nimaš {label}.",
+  "summary": "Imaš {count} {label}: {items}.",
+  "join_last": "in",
+  "unknown_carrier": "Neznano",
+  "parcel_with_sender": "pošiljka {carrier} od {sender}",
+  "parcel_without_sender": "pošiljka {carrier}",
+  "expected_between": "pričakovana {day} med {start} in {end}",
+  "expected_around": "pričakovana {day} okoli {start}",
+  "day_today": "danes",
+  "day_tomorrow": "jutri",
+  "day_weekday": "{weekday}",
+  "weekday": {
+    "0": "v ponedeljek",
+    "1": "v torek",
+    "2": "v sredo",
+    "3": "v četrtek",
+    "4": "v petek",
+    "5": "v soboto",
+    "6": "v nedeljo"
+  },
+  "not_set_up": "Parcel Aggregator ni nastavljen.",
+  "not_exposed": "Te pošiljke niso izpostavljene temu pomočniku."
+}

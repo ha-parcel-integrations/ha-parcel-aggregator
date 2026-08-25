@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "příchozí zásilka",
+      "other": "příchozí zásilky"
+    },
+    "delivered": {
+      "one": "doručená zásilka",
+      "other": "doručené zásilky"
+    },
+    "awaiting_pickup": {
+      "one": "zásilka čekající na vyzvednutí",
+      "other": "zásilky čekající na vyzvednutí"
+    }
+  },
+  "status": {
+    "registered": "právě zaregistrována",
+    "in_transit": "na cestě",
+    "out_for_delivery": "dnes v doručení",
+    "at_pickup_point": "čeká na výdejním místě",
+    "delivered": "doručena",
+    "returning": "vrací se odesílateli",
+    "problem": "má problém s doručením",
+    "unknown": "stav neznámý"
+  },
+  "no_parcels": "Nemáš žádné {label}.",
+  "summary": "Máš {count} {label}: {items}.",
+  "join_last": "a",
+  "unknown_carrier": "Neznámý",
+  "parcel_with_sender": "zásilka {carrier} od {sender}",
+  "parcel_without_sender": "zásilka {carrier}",
+  "expected_between": "očekávána {day} mezi {start} a {end}",
+  "expected_around": "očekávána {day} kolem {start}",
+  "day_today": "dnes",
+  "day_tomorrow": "zítra",
+  "day_weekday": "{weekday}",
+  "weekday": {
+    "0": "v pondělí",
+    "1": "v úterý",
+    "2": "ve středu",
+    "3": "ve čtvrtek",
+    "4": "v pátek",
+    "5": "v sobotu",
+    "6": "v neděli"
+  },
+  "not_set_up": "Parcel Aggregator není nastaven.",
+  "not_exposed": "Tyto zásilky nejsou zpřístupněny tomuto asistentovi."
+}

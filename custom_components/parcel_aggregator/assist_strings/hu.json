@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "beérkező csomag",
+      "other": "beérkező csomagok"
+    },
+    "delivered": {
+      "one": "kézbesített csomag",
+      "other": "kézbesített csomagok"
+    },
+    "awaiting_pickup": {
+      "one": "átvételre váró csomag",
+      "other": "átvételre váró csomagok"
+    }
+  },
+  "status": {
+    "registered": "most regisztrálva",
+    "in_transit": "úton",
+    "out_for_delivery": "ma kézbesítés alatt",
+    "at_pickup_point": "átvételi ponton vár",
+    "delivered": "kézbesítve",
+    "returning": "visszaküldés alatt",
+    "problem": "kézbesítési problémája van",
+    "unknown": "ismeretlen státusz"
+  },
+  "no_parcels": "Nincs {label}.",
+  "summary": "{count} {label} van: {items}.",
+  "join_last": "és",
+  "unknown_carrier": "Ismeretlen",
+  "parcel_with_sender": "egy {carrier} csomag, feladó: {sender}",
+  "parcel_without_sender": "egy {carrier} csomag",
+  "expected_between": "várható {day} {start} és {end} között",
+  "expected_around": "várható {day} {start} körül",
+  "day_today": "ma",
+  "day_tomorrow": "holnap",
+  "day_weekday": "{weekday}",
+  "weekday": {
+    "0": "hétfőn",
+    "1": "kedden",
+    "2": "szerdán",
+    "3": "csütörtökön",
+    "4": "pénteken",
+    "5": "szombaton",
+    "6": "vasárnap"
+  },
+  "not_set_up": "A Parcel Aggregator nincs beállítva.",
+  "not_exposed": "Ezek a csomagok nincsenek megosztva ezzel az asszisztenssel."
+}

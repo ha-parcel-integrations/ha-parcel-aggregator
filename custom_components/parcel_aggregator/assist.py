@@ -6,22 +6,28 @@ between 14:00 and 16:00." Both ``intent.py`` (the built-in Assist agent) and
 ``llm.py`` (LLM-based Assist agents) call into this module so the wording
 stays in one place.
 
-Every phrase lives in ``strings.json`` / ``translations/<lang>.json`` under
-the "assist" key, loaded through Home Assistant's own translation system —
-the same mechanism this integration already uses for entity names and issue
-text. Adding a language is a translation-file contribution, not a Python
-change; there's no per-language branching here to extend.
+Every phrase lives in ``assist_strings/<lang>.json``, one flat-ish JSON file
+per language, loaded by this module directly. Adding a language is a
+translation-file contribution, not a Python change; there's no per-language
+branching here to extend.
+
+This is deliberately its own private format rather than Home Assistant's
+``strings.json`` / ``translations/<lang>.json`` translation system: hassfest
+validates those two files against a fixed schema of known top-level keys
+(``entity``, ``config``, ``issues``, …) and rejects anything else, so a
+custom "assist" category there fails CI outright.
 """
 from __future__ import annotations
 
+import json
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from homeassistant.components.homeassistant import async_should_expose
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers import translation
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, ParcelStatus
@@ -39,24 +45,39 @@ ASSIST_BUCKETS = (
 
 DEFAULT_ASSIST_BUCKET = "incoming"
 
-_ASSIST_CATEGORY = "assist"
-_ASSIST_PREFIX = f"component.{DOMAIN}.{_ASSIST_CATEGORY}."
+_ASSIST_STRINGS_DIR = Path(__file__).parent / "assist_strings"
+
+
+def _flatten(data: dict[str, Any], prefix: str = "") -> dict[str, str]:
+    out: dict[str, str] = {}
+    for key, value in data.items():
+        if isinstance(value, dict):
+            out.update(_flatten(value, f"{prefix}{key}."))
+        else:
+            out[f"{prefix}{key}"] = value
+    return out
+
+
+def _load_assist_file(lang: str) -> dict[str, str]:
+    path = _ASSIST_STRINGS_DIR / f"{lang}.json"
+    if not path.exists():
+        return {}
+    return _flatten(json.loads(path.read_text(encoding="utf-8")))
 
 
 async def get_assist_strings(hass: HomeAssistant, language: str | None) -> dict[str, str]:
-    """Return the flattened "assist" translation strings for ``language``.
+    """Return the flattened assist strings for ``language``.
 
-    Home Assistant's translation cache already merges English underneath any
-    other language on a per-key basis (``homeassistant.helpers.translation``),
-    so a language with no "assist" section yet — or only a partial one —
-    degrades to English one missing key at a time rather than needing a
-    fallback here.
+    English is loaded first and any language-specific file is merged on top
+    per key, so a language with no file yet — or only a partial one —
+    degrades to English one missing key at a time.
     """
     lang = (language or "en").split("-")[0].lower()
-    raw = await translation.async_get_translations(
-        hass, lang, _ASSIST_CATEGORY, integrations={DOMAIN}
-    )
-    return {key.removeprefix(_ASSIST_PREFIX): value for key, value in raw.items()}
+    strings = await hass.async_add_executor_job(_load_assist_file, "en")
+    if lang != "en":
+        overlay = await hass.async_add_executor_job(_load_assist_file, lang)
+        strings = {**strings, **overlay}
+    return strings
 
 
 def _format_clock(dt: datetime) -> str:

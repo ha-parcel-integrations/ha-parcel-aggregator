@@ -13,7 +13,7 @@ import yaml
 from custom_components.parcel_aggregator.assist import ASSIST_BUCKETS, describe_bucket
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent
-TRANSLATIONS_DIR = REPO_ROOT / "custom_components" / "parcel_aggregator" / "translations"
+ASSIST_STRINGS_DIR = REPO_ROOT / "custom_components" / "parcel_aggregator" / "assist_strings"
 SENTENCES_DIR = REPO_ROOT / "examples" / "custom_sentences"
 
 
@@ -29,27 +29,27 @@ def _flatten(data: dict, prefix: str = "") -> dict:
 
 def _assist_keys(path: pathlib.Path) -> set[str]:
     data = json.loads(path.read_text(encoding="utf-8"))
-    return set(_flatten(data.get("assist", {})).keys())
+    return set(_flatten(data).keys())
 
 
 @pytest.fixture(scope="module")
 def english_assist_keys() -> set[str]:
-    return _assist_keys(TRANSLATIONS_DIR / "en.json")
+    return _assist_keys(ASSIST_STRINGS_DIR / "en.json")
 
 
 @pytest.mark.parametrize(
-    "path", sorted(TRANSLATIONS_DIR.glob("*.json")), ids=lambda p: p.stem
+    "path", sorted(ASSIST_STRINGS_DIR.glob("*.json")), ids=lambda p: p.stem
 )
-def test_translation_file_is_valid_json(path):
+def test_assist_strings_file_is_valid_json(path):
     json.loads(path.read_text(encoding="utf-8"))
 
 
 @pytest.mark.parametrize(
     "path",
-    sorted(p for p in TRANSLATIONS_DIR.glob("*.json") if p.stem != "en"),
+    sorted(p for p in ASSIST_STRINGS_DIR.glob("*.json") if p.stem != "en"),
     ids=lambda p: p.stem,
 )
-def test_translation_assist_keys_match_english(path, english_assist_keys):
+def test_assist_strings_keys_match_english(path, english_assist_keys):
     keys = _assist_keys(path)
     assert keys == english_assist_keys, (
         f"{path.name}: missing {english_assist_keys - keys}, "
@@ -82,7 +82,7 @@ def test_custom_sentences_file_is_valid_and_covers_all_buckets(lang_dir):
 # str.format() time.
 # ---------------------------------------------------------------------------
 
-_ALL_LANGUAGES = sorted(p.stem for p in TRANSLATIONS_DIR.glob("*.json"))
+_ALL_LANGUAGES = sorted(p.stem for p in ASSIST_STRINGS_DIR.glob("*.json"))
 
 _PARCEL_WITH_WINDOW = {
     "carrier": "PostNL",

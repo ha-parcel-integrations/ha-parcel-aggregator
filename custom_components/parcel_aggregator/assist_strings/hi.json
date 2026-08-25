@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "आने वाला पार्सल",
+      "other": "आने वाले पार्सल"
+    },
+    "delivered": {
+      "one": "डिलीवर किया गया पार्सल",
+      "other": "डिलीवर किए गए पार्सल"
+    },
+    "awaiting_pickup": {
+      "one": "पिकअप के इंतज़ार में पार्सल",
+      "other": "पिकअप के इंतज़ार में पार्सल"
+    }
+  },
+  "status": {
+    "registered": "अभी रजिस्टर हुआ",
+    "in_transit": "ट्रांज़िट में",
+    "out_for_delivery": "आज डिलीवरी पर",
+    "at_pickup_point": "पिकअप पॉइंट पर इंतज़ार में",
+    "delivered": "डिलीवर हो गया",
+    "returning": "वापस भेजा जा रहा है",
+    "problem": "डिलीवरी में समस्या है",
+    "unknown": "स्थिति अज्ञात"
+  },
+  "no_parcels": "आपके पास कोई {label} नहीं है।",
+  "summary": "आपके पास {count} {label} हैं: {items}।",
+  "join_last": "और",
+  "unknown_carrier": "अज्ञात",
+  "parcel_with_sender": "{sender} से {carrier} का पार्सल",
+  "parcel_without_sender": "{carrier} का पार्सल",
+  "expected_between": "{day} {start} से {end} के बीच आने की उम्मीद है",
+  "expected_around": "{day} {start} के आसपास आने की उम्मीद है",
+  "day_today": "आज",
+  "day_tomorrow": "कल",
+  "day_weekday": "{weekday} को",
+  "weekday": {
+    "0": "सोमवार",
+    "1": "मंगलवार",
+    "2": "बुधवार",
+    "3": "गुरुवार",
+    "4": "शुक्रवार",
+    "5": "शनिवार",
+    "6": "रविवार"
+  },
+  "not_set_up": "Parcel Aggregator सेट अप नहीं है।",
+  "not_exposed": "ये पार्सल इस असिस्टेंट के लिए उपलब्ध नहीं हैं।"
+}

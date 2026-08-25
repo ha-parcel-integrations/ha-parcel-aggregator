@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "bungkusan masuk",
+      "other": "bungkusan masuk"
+    },
+    "delivered": {
+      "one": "bungkusan dihantar",
+      "other": "bungkusan dihantar"
+    },
+    "awaiting_pickup": {
+      "one": "bungkusan menunggu pengambilan",
+      "other": "bungkusan menunggu pengambilan"
+    }
+  },
+  "status": {
+    "registered": "baru didaftarkan",
+    "in_transit": "dalam perjalanan",
+    "out_for_delivery": "dihantar hari ini",
+    "at_pickup_point": "menunggu di titik pengambilan",
+    "delivered": "telah dihantar",
+    "returning": "sedang dipulangkan",
+    "problem": "mempunyai masalah penghantaran",
+    "unknown": "status tidak diketahui"
+  },
+  "no_parcels": "Anda tiada {label}.",
+  "summary": "Anda mempunyai {count} {label}: {items}.",
+  "join_last": "dan",
+  "unknown_carrier": "Tidak diketahui",
+  "parcel_with_sender": "bungkusan {carrier} daripada {sender}",
+  "parcel_without_sender": "bungkusan {carrier}",
+  "expected_between": "dijangka {day} antara {start} dan {end}",
+  "expected_around": "dijangka {day} sekitar {start}",
+  "day_today": "hari ini",
+  "day_tomorrow": "esok",
+  "day_weekday": "pada {weekday}",
+  "weekday": {
+    "0": "Isnin",
+    "1": "Selasa",
+    "2": "Rabu",
+    "3": "Khamis",
+    "4": "Jumaat",
+    "5": "Sabtu",
+    "6": "Ahad"
+  },
+  "not_set_up": "Parcel Aggregator belum disediakan.",
+  "not_exposed": "Bungkusan ini tidak didedahkan kepada pembantu ini."
+}

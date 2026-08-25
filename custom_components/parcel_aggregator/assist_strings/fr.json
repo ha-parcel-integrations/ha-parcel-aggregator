@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "colis entrant",
+      "other": "colis entrants"
+    },
+    "delivered": {
+      "one": "colis livré",
+      "other": "colis livrés"
+    },
+    "awaiting_pickup": {
+      "one": "colis en attente de retrait",
+      "other": "colis en attente de retrait"
+    }
+  },
+  "status": {
+    "registered": "vient d'être enregistré",
+    "in_transit": "en transit",
+    "out_for_delivery": "en cours de livraison aujourd'hui",
+    "at_pickup_point": "en attente dans un point relais",
+    "delivered": "livré",
+    "returning": "en cours de retour",
+    "problem": "a un problème de livraison",
+    "unknown": "statut inconnu"
+  },
+  "no_parcels": "Vous n'avez aucun {label}.",
+  "summary": "Vous avez {count} {label} : {items}.",
+  "join_last": "et",
+  "unknown_carrier": "Inconnu",
+  "parcel_with_sender": "un colis {carrier} de {sender}",
+  "parcel_without_sender": "un colis {carrier}",
+  "expected_between": "attendu {day} entre {start} et {end}",
+  "expected_around": "attendu {day} vers {start}",
+  "day_today": "aujourd'hui",
+  "day_tomorrow": "demain",
+  "day_weekday": "{weekday}",
+  "weekday": {
+    "0": "lundi",
+    "1": "mardi",
+    "2": "mercredi",
+    "3": "jeudi",
+    "4": "vendredi",
+    "5": "samedi",
+    "6": "dimanche"
+  },
+  "not_set_up": "Parcel Aggregator n'est pas configuré.",
+  "not_exposed": "Ces colis ne sont pas partagés avec cet assistant."
+}

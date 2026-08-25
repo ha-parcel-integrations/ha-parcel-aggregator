@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "eingehendes Paket",
+      "other": "eingehende Pakete"
+    },
+    "delivered": {
+      "one": "zugestelltes Paket",
+      "other": "zugestellte Pakete"
+    },
+    "awaiting_pickup": {
+      "one": "Paket zur Abholung",
+      "other": "Pakete zur Abholung"
+    }
+  },
+  "status": {
+    "registered": "gerade angemeldet",
+    "in_transit": "unterwegs",
+    "out_for_delivery": "heute in Zustellung",
+    "at_pickup_point": "wartet an einer Abholstation",
+    "delivered": "zugestellt",
+    "returning": "wird zurückgeschickt",
+    "problem": "hat ein Zustellproblem",
+    "unknown": "Status unbekannt"
+  },
+  "no_parcels": "Du hast keine {label}.",
+  "summary": "Du hast {count} {label}: {items}.",
+  "join_last": "und",
+  "unknown_carrier": "Unbekannt",
+  "parcel_with_sender": "ein {carrier}-Paket von {sender}",
+  "parcel_without_sender": "ein {carrier}-Paket",
+  "expected_between": "erwartet {day} zwischen {start} und {end}",
+  "expected_around": "erwartet {day} gegen {start}",
+  "day_today": "heute",
+  "day_tomorrow": "morgen",
+  "day_weekday": "am {weekday}",
+  "weekday": {
+    "0": "Montag",
+    "1": "Dienstag",
+    "2": "Mittwoch",
+    "3": "Donnerstag",
+    "4": "Freitag",
+    "5": "Samstag",
+    "6": "Sonntag"
+  },
+  "not_set_up": "Parcel Aggregator ist nicht eingerichtet.",
+  "not_exposed": "Diese Pakete sind für diesen Assistenten nicht freigegeben."
+}

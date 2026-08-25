@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "innkommende pakke",
+      "other": "innkommende pakker"
+    },
+    "delivered": {
+      "one": "levert pakke",
+      "other": "leverte pakker"
+    },
+    "awaiting_pickup": {
+      "one": "pakke som venter på henting",
+      "other": "pakker som venter på henting"
+    }
+  },
+  "status": {
+    "registered": "nettopp registrert",
+    "in_transit": "underveis",
+    "out_for_delivery": "leveres i dag",
+    "at_pickup_point": "venter på et hentested",
+    "delivered": "levert",
+    "returning": "sendes i retur",
+    "problem": "har et leveringsproblem",
+    "unknown": "status ukjent"
+  },
+  "no_parcels": "Du har ingen {label}.",
+  "summary": "Du har {count} {label}: {items}.",
+  "join_last": "og",
+  "unknown_carrier": "Ukjent",
+  "parcel_with_sender": "en {carrier}-pakke fra {sender}",
+  "parcel_without_sender": "en {carrier}-pakke",
+  "expected_between": "forventes {day} mellom {start} og {end}",
+  "expected_around": "forventes {day} rundt {start}",
+  "day_today": "i dag",
+  "day_tomorrow": "i morgen",
+  "day_weekday": "på {weekday}",
+  "weekday": {
+    "0": "mandag",
+    "1": "tirsdag",
+    "2": "onsdag",
+    "3": "torsdag",
+    "4": "fredag",
+    "5": "lørdag",
+    "6": "søndag"
+  },
+  "not_set_up": "Parcel Aggregator er ikke konfigurert.",
+  "not_exposed": "De pakkene er ikke eksponert for denne assistenten."
+}

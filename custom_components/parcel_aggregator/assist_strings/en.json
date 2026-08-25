@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "incoming parcel",
+      "other": "incoming parcels"
+    },
+    "delivered": {
+      "one": "delivered parcel",
+      "other": "delivered parcels"
+    },
+    "awaiting_pickup": {
+      "one": "parcel awaiting pickup",
+      "other": "parcels awaiting pickup"
+    }
+  },
+  "status": {
+    "registered": "just registered",
+    "in_transit": "in transit",
+    "out_for_delivery": "out for delivery",
+    "at_pickup_point": "waiting at a pickup point",
+    "delivered": "delivered",
+    "returning": "being returned",
+    "problem": "has a delivery problem",
+    "unknown": "status unknown"
+  },
+  "no_parcels": "You have no {label}.",
+  "summary": "You have {count} {label}: {items}.",
+  "join_last": "and",
+  "unknown_carrier": "Unknown",
+  "parcel_with_sender": "a {carrier} parcel from {sender}",
+  "parcel_without_sender": "a {carrier} parcel",
+  "expected_between": "expected {day} between {start} and {end}",
+  "expected_around": "expected {day} around {start}",
+  "day_today": "today",
+  "day_tomorrow": "tomorrow",
+  "day_weekday": "on {weekday}",
+  "weekday": {
+    "0": "Monday",
+    "1": "Tuesday",
+    "2": "Wednesday",
+    "3": "Thursday",
+    "4": "Friday",
+    "5": "Saturday",
+    "6": "Sunday"
+  },
+  "not_set_up": "Parcel Aggregator is not set up.",
+  "not_exposed": "Those parcels are not exposed to this assistant."
+}

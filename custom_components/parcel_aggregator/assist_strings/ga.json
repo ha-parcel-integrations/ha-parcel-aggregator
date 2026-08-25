@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "beart isteach",
+      "other": "bearta isteach"
+    },
+    "delivered": {
+      "one": "beart seachadta",
+      "other": "bearta seachadta"
+    },
+    "awaiting_pickup": {
+      "one": "beart ag fanacht le bailiú",
+      "other": "bearta ag fanacht le bailiú"
+    }
+  },
+  "status": {
+    "registered": "cláraithe anois díreach",
+    "in_transit": "ar an mbealach",
+    "out_for_delivery": "á sheachadadh inniu",
+    "at_pickup_point": "ag fanacht ag pointe bailithe",
+    "delivered": "seachadta",
+    "returning": "á thabhairt ar ais",
+    "problem": "fadhb seachadta aige",
+    "unknown": "stádas anaithnid"
+  },
+  "no_parcels": "Níl {label} agat.",
+  "summary": "Tá {count} {label} agat: {items}.",
+  "join_last": "agus",
+  "unknown_carrier": "Anaithnid",
+  "parcel_with_sender": "beart {carrier} ó {sender}",
+  "parcel_without_sender": "beart {carrier}",
+  "expected_between": "ag súil leis {day} idir {start} agus {end}",
+  "expected_around": "ag súil leis {day} timpeall {start}",
+  "day_today": "inniu",
+  "day_tomorrow": "amárach",
+  "day_weekday": "{weekday}",
+  "weekday": {
+    "0": "Dé Luain",
+    "1": "Dé Máirt",
+    "2": "Dé Céadaoin",
+    "3": "Déardaoin",
+    "4": "Dé hAoine",
+    "5": "Dé Sathairn",
+    "6": "Dé Domhnaigh"
+  },
+  "not_set_up": "Níl Parcel Aggregator socraithe.",
+  "not_exposed": "Níl na bearta sin nochta don chúntóir seo."
+}

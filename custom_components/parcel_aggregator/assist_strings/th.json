@@ -1,0 +1,48 @@
+{
+  "bucket": {
+    "incoming": {
+      "one": "พัสดุขาเข้า",
+      "other": "พัสดุขาเข้า"
+    },
+    "delivered": {
+      "one": "พัสดุที่จัดส่งแล้ว",
+      "other": "พัสดุที่จัดส่งแล้ว"
+    },
+    "awaiting_pickup": {
+      "one": "พัสดุที่รอรับ",
+      "other": "พัสดุที่รอรับ"
+    }
+  },
+  "status": {
+    "registered": "เพิ่งลงทะเบียน",
+    "in_transit": "อยู่ระหว่างขนส่ง",
+    "out_for_delivery": "จัดส่งวันนี้",
+    "at_pickup_point": "รอที่จุดรับพัสดุ",
+    "delivered": "จัดส่งแล้ว",
+    "returning": "กำลังตีกลับ",
+    "problem": "มีปัญหาการจัดส่ง",
+    "unknown": "ไม่ทราบสถานะ"
+  },
+  "no_parcels": "คุณไม่มี {label}",
+  "summary": "คุณมี {label} {count} ชิ้น: {items}",
+  "join_last": "และ",
+  "unknown_carrier": "ไม่ทราบ",
+  "parcel_with_sender": "พัสดุ {carrier} จาก {sender}",
+  "parcel_without_sender": "พัสดุ {carrier}",
+  "expected_between": "คาดว่าจะถึง {day} ระหว่างเวลา {start} ถึง {end} น.",
+  "expected_around": "คาดว่าจะถึง {day} ประมาณ {start} น.",
+  "day_today": "วันนี้",
+  "day_tomorrow": "พรุ่งนี้",
+  "day_weekday": "วัน{weekday}",
+  "weekday": {
+    "0": "จันทร์",
+    "1": "อังคาร",
+    "2": "พุธ",
+    "3": "พฤหัสบดี",
+    "4": "ศุกร์",
+    "5": "เสาร์",
+    "6": "อาทิตย์"
+  },
+  "not_set_up": "ยังไม่ได้ตั้งค่า Parcel Aggregator",
+  "not_exposed": "พัสดุเหล่านี้ไม่ได้เปิดให้ผู้ช่วยนี้เข้าถึง"
+}

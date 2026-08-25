@@ -48,44 +48,5 @@
       "title": "Geen pakketbezorger-integraties gevonden",
       "description": "De pakket-aggregator heeft geen bronsensoren gevonden. Installeer minimaal één van de ondersteunde integraties ({carriers}), zorg dat die is geauthenticeerd en herlaad daarna de pakket-aggregator."
     }
-  },
-  "assist": {
-    "bucket": {
-      "incoming": { "one": "binnenkomend pakket", "other": "binnenkomende pakketten" },
-      "delivered": { "one": "bezorgd pakket", "other": "bezorgde pakketten" },
-      "awaiting_pickup": { "one": "pakket bij een afhaalpunt", "other": "pakketten bij een afhaalpunt" }
-    },
-    "status": {
-      "registered": "net aangemeld",
-      "in_transit": "onderweg",
-      "out_for_delivery": "vandaag in bezorging",
-      "at_pickup_point": "klaar bij een afhaalpunt",
-      "delivered": "bezorgd",
-      "returning": "wordt geretourneerd",
-      "problem": "heeft een bezorgprobleem",
-      "unknown": "status onbekend"
-    },
-    "no_parcels": "Je hebt geen {label}.",
-    "summary": "Je hebt {count} {label}: {items}.",
-    "join_last": "en",
-    "unknown_carrier": "Onbekend",
-    "parcel_with_sender": "een {carrier}-pakket van {sender}",
-    "parcel_without_sender": "een {carrier}-pakket",
-    "expected_between": "verwacht {day} tussen {start} en {end}",
-    "expected_around": "verwacht {day} rond {start}",
-    "day_today": "vandaag",
-    "day_tomorrow": "morgen",
-    "day_weekday": "op {weekday}",
-    "weekday": {
-      "0": "maandag",
-      "1": "dinsdag",
-      "2": "woensdag",
-      "3": "donderdag",
-      "4": "vrijdag",
-      "5": "zaterdag",
-      "6": "zondag"
-    },
-    "not_set_up": "Parcel Aggregator is niet ingesteld.",
-    "not_exposed": "Die pakketten zijn niet vrijgegeven voor dit assistent."
   }
 }
