@@ -54,7 +54,6 @@ are silently skipped. New carriers work without an update here.
 
 ## Requirements
 
-- Home Assistant 2024.7 or newer
 - At least one of the supported carrier integrations installed and authenticated
 
 ## Installation
