@@ -33,6 +33,7 @@ class ParcelStatus(StrEnum):
 KNOWN_CARRIERS: dict[str, str] = {
     "ampere": "Ampère",
     "an_post": "An Post",
+    "aramex": "Aramex",
     "better_trucks": "Better Trucks",
     "budbee": "Budbee",
     "cainiao": "Cainiao",
@@ -52,6 +53,7 @@ KNOWN_CARRIERS: dict[str, str] = {
     "hermes": "Hermes",
     "laposte": "La Poste",
     "nova_post": "Nova Post",
+    "nz_post": "NZ Post",
     "oesterreichische_post": "Österreichische Post",
     "ontrac": "OnTrac",
     "orlen_paczka": "ORLEN Paczka",
@@ -84,6 +86,7 @@ KNOWN_CARRIERS: dict[str, str] = {
 CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "ampere": "ampere",
     "an_post": "an_post",
+    "aramex": "aramex",
     "better_trucks": "better_trucks",
     "budbee": "budbee",
     "cainiao": "cainiao",
@@ -103,6 +106,7 @@ CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "hermes": "hermes",
     "laposte": "laposte",
     "nova_post": "nova_post",
+    "nz_post": "nz_post",
     "oesterreichische_post": "oesterreichische_post",
     "ontrac": "ontrac",
     "orlen_paczka": "orlen_paczka",
