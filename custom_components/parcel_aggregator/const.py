@@ -73,6 +73,7 @@ KNOWN_CARRIERS: dict[str, str] = {
     "swiss_post": "Swiss Post",
     "trunkrs": "Trunkrs",
     "uniuni": "UniUni",
+    "ups": "UPS",
     "vinted_go": "Vinted Go",
 }
 
@@ -128,6 +129,7 @@ CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "swiss_post": "swiss_post",
     "trunkrs": "trunkrs",
     "uniuni": "uniuni",
+    "ups": "ups",
     "vinted_go": "vinted_go",
 }
 
