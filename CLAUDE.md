@@ -1,8 +1,10 @@
 # Working in this repository
 
 Home Assistant custom integration that rolls up parcel counts and next-delivery
-timestamps from the DHL, PostNL, DPD, GLS, Dragonfly, Trunkrs and Cainiao
-integrations into one set of sensors. Distributed via HACS; not part of HA core.
+timestamps from every installed carrier in the suite (see the
+[carrier list](https://ha-parcel-integrations.github.io/carriers/) — this repo's
+own `KNOWN_CARRIERS` in `const.py` is the actual source of truth for what it
+reads) into one set of sensors. Distributed via HACS; not part of HA core.
 **Gold** quality tier, minimum HA `2024.7.0`. **Not a carrier** — it consumes the
 suite's parcel contract and re-emits it; it has no external API.
 

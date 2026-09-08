@@ -49,9 +49,10 @@ Carriers you have not installed are silently skipped. If you add a carrier integ
 
 The aggregator reads every carrier integration in the
 [**ha-parcel-integrations**](https://github.com/ha-parcel-integrations) family —
-see that page for the current, authoritative carrier list. Any supported carrier
-you have installed is picked up automatically; carriers you have not installed
-are silently skipped. New carriers work without an update here.
+see the [carrier list](https://ha-parcel-integrations.github.io/carriers/) for the
+current, authoritative list. Any supported carrier you have installed is picked up
+automatically; carriers you have not installed are silently skipped. New carriers
+work without an update here.
 
 ## Requirements
 
