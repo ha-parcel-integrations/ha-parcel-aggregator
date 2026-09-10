@@ -21,6 +21,11 @@ you act in one of these areas:
 | change how a parcel field, `ParcelStatus`, or a carrier bus event is consumed / re-emitted | *Parcel contract* — the shape and events this repo aggregates; the aggregator re-emits under a unified prefix with `raw` stripped |
 | commit, bump, tag, release, or write release notes; add a feature without a test | *Workflow / Commits / Versioning / Testing* |
 
+**Structure, options flow, dynamic polling and module layout are suite-wide**
+and identical in every carrier — the authoritative spec is
+[`ha-carrier-template/scaffold/CLAUDE.md`](https://github.com/ha-parcel-integrations/ha-carrier-template/blob/main/scaffold/CLAUDE.md).
+This repo follows it exactly.
+
 ## Load-bearing decisions — do not refactor away
 
 - **No external API — subscribes to source sensor *state changes***
