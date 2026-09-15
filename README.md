@@ -7,7 +7,7 @@
 
 > 💬 Questions or feedback? Join the discussion on the [Home Assistant community](https://community.home-assistant.io/t/packages-postnl-dhl-nl-dpd-and-gls-parcel-integration/112433/).
 
-A Home Assistant custom integration that rolls up parcel counts, next-delivery timestamps, and parcel-event notifications from every installed [ha-parcel-integrations](https://github.com/ha-parcel-integrations) carrier into a single set of sensors and a single unified event stream.
+A Home Assistant custom integration that rolls up parcel counts, next-delivery timestamps, and parcel-event notifications from every installed [ha-parcel-integrations](https://ha-parcel-integrations.io) carrier into a single set of sensors and a single unified event stream.
 
 ## Contents
 
@@ -48,7 +48,7 @@ Carriers you have not installed are silently skipped. If you add a carrier integ
 ## Supported sources
 
 The aggregator reads every carrier integration in the
-[**ha-parcel-integrations**](https://github.com/ha-parcel-integrations) family —
+[**ha-parcel-integrations**](https://ha-parcel-integrations.io) family —
 see the [carrier list](https://ha-parcel-integrations.github.io/carriers/) for the
 current, authoritative list. Any supported carrier you have installed is picked up
 automatically; carriers you have not installed are silently skipped. New carriers
@@ -164,7 +164,7 @@ Asking Assist "which packages do I receive today" reads back the bucket sensor's
 
 `incoming` holds every active parcel, not just today's — a parcel arriving next week shows up here too. Rather than filtering (which would silently drop parcels that don't have a known ETA yet), each parcel's timing is always spelled out relative to today: *"expected today between 14:00 and 16:00"*, *"expected tomorrow around 09:00"*, or *"expected on Thursday around 10:00"* for anything further out.
 
-**Languages**: 30 in total — see [`assist_strings/`](custom_components/parcel_aggregator/assist_strings/) for the full list, matching every language already used somewhere in the [ha-parcel-integrations](https://github.com/ha-parcel-integrations) suite plus the languages of Shopee Xpress's markets. This is a private file format rather than Home Assistant's own `strings.json`/`translations/` system, since hassfest validates those against a fixed schema that has no room for a custom "assist" category. Adding another language is a translation-file contribution, not a code change. Beyond en/nl these are machine-translated starting points, not reviewed by native speakers — corrections welcome.
+**Languages**: 30 in total — see [`assist_strings/`](custom_components/parcel_aggregator/assist_strings/) for the full list, matching every language already used somewhere in the [ha-parcel-integrations](https://ha-parcel-integrations.io) suite plus the languages of Shopee Xpress's markets. This is a private file format rather than Home Assistant's own `strings.json`/`translations/` system, since hassfest validates those against a fixed schema that has no room for a custom "assist" category. Adding another language is a translation-file contribution, not a code change. Beyond en/nl these are machine-translated starting points, not reviewed by native speakers — corrections welcome.
 
 How you trigger it depends on your Assist agent:
 
