@@ -13,7 +13,7 @@
 # shifts the ETA you'll get a second entry — delete the old one by hand, or
 # just rely on the built-in combined Deliveries calendar instead.
 
-alias: "Parcels: add delivery to my calendar"
+alias: "Parcel: add delivery to my calendar"
 description: Write every carrier's expected delivery window into a calendar you choose.
 mode: queued
 max: 10

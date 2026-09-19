@@ -2,7 +2,7 @@
 # a webshop return) reaches the recipient, so you can watch for the refund.
 # One automation covers every carrier via the aggregator's unified event.
 
-alias: "Parcels: any outgoing parcel delivered"
+alias: "Parcel: any outgoing parcel delivered"
 description: Notify when an outgoing/return parcel from any carrier is delivered.
 mode: queued
 max: 10
