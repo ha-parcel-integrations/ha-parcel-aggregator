@@ -33,6 +33,7 @@ class ParcelStatus(StrEnum):
 KNOWN_CARRIERS: dict[str, str] = {
     "ampere": "Ampère",
     "an_post": "An Post",
+    "apple_express": "Apple Express",
     "aramex": "Aramex",
     "better_trucks": "Better Trucks",
     "boxnow": "BoxNow",
@@ -102,6 +103,7 @@ KNOWN_CARRIERS: dict[str, str] = {
 CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "ampere": "ampere",
     "an_post": "an_post",
+    "apple_express": "apple_express",
     "aramex": "aramex",
     "better_trucks": "better_trucks",
     "boxnow": "boxnow",
