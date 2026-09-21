@@ -189,7 +189,11 @@ Third-party cards that work with these sensors:
 
 ## Disclaimer
 
-This is an independent, community-built project with no affiliation, endorsement, or connection to any parcel carrier or its subsidiaries.
+This is an independent, community-built project. It is not affiliated with, endorsed by, sponsored by, or supported by any parcel carrier, Home Assistant, or any other third party referenced in this project.
+
+All third-party trademarks, trade names, product names, logos, and other brand assets are the property of their respective owners. References to them are solely to identify the relevant carrier or service and do not imply affiliation, sponsorship, or endorsement. Nothing in this project grants or implies any licence or right to use third-party brand assets.
+
+This integration does not contact any carrier itself; it only combines the parcels your installed carrier integrations already report inside Home Assistant, and this project operates no servers of its own. Use is at your own risk; see the [licence](LICENSE) for warranty limitations.
 
 ## Contributing
 
