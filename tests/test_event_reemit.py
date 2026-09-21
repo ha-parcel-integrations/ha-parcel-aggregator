@@ -10,6 +10,7 @@ from custom_components.parcel_aggregator.const import (
     EVENT_PARCEL_DELIVERY_TIME_CHANGED,
     EVENT_PARCEL_REGISTERED,
     EVENT_PARCEL_STATUS_CHANGED,
+    KNOWN_CARRIERS,
     ParcelStatus,
 )
 
@@ -146,6 +147,37 @@ async def test_dpd_registered_event_is_reemitted_unified(hass):
     payload = captured[0].data
     assert payload["carrier"] == "DPD"
     assert payload["barcode"] == "01XXXXXXXXXXXX"
+    assert payload["status"] == ParcelStatus.REGISTERED
+    assert "raw" not in payload
+
+
+@pytest.mark.asyncio
+async def test_seur_registered_event_is_reemitted_unified(hass):
+    """A SEUR event is discovered and re-emitted through the shared stream."""
+    assert KNOWN_CARRIERS["seur"] == "SEUR"
+    assert CARRIER_EVENT_PREFIXES["seur"] == "seur"
+
+    entry = _add_entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    captured = _capture(hass, EVENT_PARCEL_REGISTERED)
+    hass.bus.async_fire(
+        "seur_parcel_registered",
+        {
+            "carrier": "SEUR",
+            "barcode": "SEUR-TEST-0001",
+            "status": ParcelStatus.REGISTERED,
+            "raw_status": "SX010",
+            "raw": {"carrier_payload": "kept at source"},
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert len(captured) == 1
+    payload = captured[0].data
+    assert payload["carrier"] == "SEUR"
+    assert payload["barcode"] == "SEUR-TEST-0001"
     assert payload["status"] == ParcelStatus.REGISTERED
     assert "raw" not in payload
 
