@@ -134,23 +134,6 @@ def next_delivery_from(parcels: list[dict]) -> dict[str, Any]:
     }
 
 
-def awaiting_pickup_from(parcels: list[dict]) -> dict[str, Any]:
-    """Count active parcels destined for a pickup point and provide the list."""
-    matching = [
-        p for p in parcels
-        if p.get("pickup") and not p.get("delivered")
-    ]
-    by_carrier: dict[str, int] = {}
-    for parcel in matching:
-        carrier = parcel.get("carrier") or "Unknown"
-        by_carrier[carrier] = by_carrier.get(carrier, 0) + 1
-    return {
-        "total": len(matching),
-        "by_carrier": by_carrier,
-        "parcels": [strip_raw(p) for p in matching],
-    }
-
-
 class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Tracks source carrier sensors and emits aggregated state."""
 
@@ -367,6 +350,14 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "delivered_at",
             descending=True,
         )
+        en_route_to_pickup_point_parcels = sort_parcels_by_ts(
+            dedupe_parcels(self._collect_parcels("en_route_to_pickup_point")),
+            "planned_from",
+        )
+        awaiting_pickup_parcels = sort_parcels_by_ts(
+            dedupe_parcels(self._collect_parcels("awaiting_pickup")),
+            "planned_from",
+        )
         return {
             "incoming": {
                 **count_by_carrier(incoming_parcels),
@@ -388,8 +379,17 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "any_available": self._any_available("outgoing_delivered"),
                 "parcels": [strip_raw(p) for p in outgoing_delivered_parcels],
             },
+            "en_route_to_pickup_point": {
+                **count_by_carrier(en_route_to_pickup_point_parcels),
+                "any_available": self._any_available("en_route_to_pickup_point"),
+                "parcels": [strip_raw(p) for p in en_route_to_pickup_point_parcels],
+            },
+            "awaiting_pickup": {
+                **count_by_carrier(awaiting_pickup_parcels),
+                "any_available": self._any_available("awaiting_pickup"),
+                "parcels": [strip_raw(p) for p in awaiting_pickup_parcels],
+            },
             "next_delivery": next_delivery_from(incoming_parcels),
-            "awaiting_pickup": awaiting_pickup_from(incoming_parcels),
         }
 
     def _any_available(self, bucket: str) -> bool:

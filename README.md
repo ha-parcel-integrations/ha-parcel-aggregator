@@ -96,7 +96,8 @@ Standard HA removal applies: **Settings → Devices & Services → Parcel Aggreg
 | `sensor.parcel_aggregator_outgoing_parcels` | Sum of active outgoing parcels across all carriers; merged list on the `parcels` attribute |
 | `sensor.parcel_aggregator_delivered_parcels` | Sum of recently delivered incoming parcels across all carriers (uses each carrier's own filter window); merged list on `parcels` |
 | `sensor.parcel_aggregator_outgoing_delivered_parcels` | Sum of recently delivered outgoing parcels across all carriers; merged list on `parcels` |
-| `sensor.parcel_aggregator_awaiting_pickup` | Sum of active incoming parcels destined for a pickup point (ServicePoint / PostNL Point / ParcelShop); merged list on `parcels` |
+| `sensor.parcel_aggregator_en_route_to_pickup_point` | Sum of parcels en route to a pickup point from carriers that expose this optional canonical source; merged list on `parcels` |
+| `sensor.parcel_aggregator_awaiting_pickup` | Sum of parcels at a pickup point and ready for collection, from each carrier's `awaiting_pickup` sensor; merged list on `parcels` |
 | `sensor.parcel_aggregator_next_delivery` | Earliest expected delivery datetime across all carriers; the matching parcel on the `parcel` attribute |
 
 Every sensor exposes a `by_carrier` attribute with the per-carrier breakdown — handy for dashboard cards like "5 incoming (2 DHL · 3 PostNL)".
@@ -185,7 +186,7 @@ Third-party cards that work with these sensors:
 ## Known limitations
 
 - The `next_delivery` timestamp is only as precise as the underlying carrier exposes. DPD gives a day window (midnight to midnight) until Follow My Parcel fires shortly before delivery — then it narrows to an hour window. Use it for "today/tomorrow" alerts rather than counting on precise hour windows being available all day.
-- The `awaiting_pickup` sensor counts every parcel destined for a pickup point, including ones that are still en route. DHL exposes a distinct `at_pickup_point` status on the parcel dict for parcels that have *actually arrived* at the pickup point — DPD's API does not surface this signal yet. The sensor stays on the lowest-common-denominator semantics for now.
+- `en_route_to_pickup_point` and `awaiting_pickup` only include carriers that expose the matching sensor. Every carrier that can report a parcel as arrived at a pickup point has an `awaiting_pickup` sensor; `en_route_to_pickup_point` is optional, so a carrier that can't tell a pickup-point parcel apart before it arrives only shows it under incoming.
 
 ## Disclaimer
 

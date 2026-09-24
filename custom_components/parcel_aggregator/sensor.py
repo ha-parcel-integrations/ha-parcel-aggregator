@@ -40,6 +40,7 @@ async def async_setup_entry(
             ParcelsOutgoingSensor(coordinator),
             ParcelsDeliveredSensor(coordinator),
             ParcelsOutgoingDeliveredSensor(coordinator),
+            ParcelsEnRouteToPickupPointSensor(coordinator),
             ParcelsAwaitingPickupSensor(coordinator),
             ParcelsNextDeliverySensor(coordinator),
         ]
@@ -110,6 +111,13 @@ class ParcelsOutgoingDeliveredSensor(_BaseListSensor):
 
     _attr_translation_key = "outgoing_delivered"
     _bucket = "outgoing_delivered"
+
+
+class ParcelsEnRouteToPickupPointSensor(_BaseListSensor):
+    """Parcels en route to a pickup point from supporting carriers."""
+
+    _attr_translation_key = "en_route_to_pickup_point"
+    _bucket = "en_route_to_pickup_point"
 
 
 class ParcelsAwaitingPickupSensor(_BaseListSensor):

@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 from custom_components.parcel_aggregator.sensor import (
     ParcelsAwaitingPickupSensor,
     ParcelsDeliveredSensor,
+    ParcelsEnRouteToPickupPointSensor,
     ParcelsIncomingSensor,
     ParcelsNextDeliverySensor,
     ParcelsOutgoingDeliveredSensor,
@@ -80,6 +81,16 @@ def test_awaiting_pickup_sensor_reports_pickup_parcels():
             {"awaiting_pickup": {"total": 1, "by_carrier": {"DPD": 1}, "parcels": parcels}}
         )
     )
+    assert sensor.native_value == 1
+    assert sensor.extra_state_attributes["parcels"] == parcels
+
+
+def test_en_route_to_pickup_point_sensor_reports_source_parcels():
+    parcels = [{"barcode": "P"}]
+    sensor = ParcelsEnRouteToPickupPointSensor(
+        _coordinator({"en_route_to_pickup_point": {"total": 1, "by_carrier": {"DPD": 1}, "parcels": parcels}})
+    )
+    assert sensor.unique_id == "parcel_aggregator_en_route_to_pickup_point"
     assert sensor.native_value == 1
     assert sensor.extra_state_attributes["parcels"] == parcels
 

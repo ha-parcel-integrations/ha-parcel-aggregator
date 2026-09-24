@@ -179,6 +179,8 @@ EVENT_OUTGOING_PARCEL_DELIVERED = f"{DOMAIN}_outgoing_parcel_delivered"
 # outgoing parcels would be mis-bucketed as incoming delivered.
 SOURCE_SUFFIXES: dict[str, str] = {
     "_incoming_parcels": "incoming",
+    "_en_route_to_pickup_point": "en_route_to_pickup_point",
+    "_awaiting_pickup": "awaiting_pickup",
     "_outgoing_parcels": "outgoing",
     "_delivered_parcels": "delivered",
     "_outgoing_delivered_parcels": "outgoing_delivered",
@@ -190,6 +192,8 @@ SOURCE_SUFFIXES: dict[str, str] = {
 # outgoing is gone from all three.
 ATTR_KEY_BY_BUCKET: dict[str, str] = {
     "incoming": "parcels",
+    "en_route_to_pickup_point": "parcels",
+    "awaiting_pickup": "parcels",
     "outgoing": "parcels",
     "delivered": "parcels",
     "outgoing_delivered": "parcels",

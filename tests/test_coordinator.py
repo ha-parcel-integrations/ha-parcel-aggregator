@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 import pytest
 
 from custom_components.parcel_aggregator.coordinator import (
-    awaiting_pickup_from,
     count_by_carrier,
     dedupe_parcels,
     next_delivery_from,
@@ -21,6 +20,7 @@ def _parcel(
     planned_from: str | None = None,
     pickup: bool = False,
     pickup_point: str | None = None,
+    status: str = "in_transit",
     delivered: bool = False,
     delivered_at: str | None = None,
     raw: dict | None = None,
@@ -29,7 +29,7 @@ def _parcel(
         "carrier": carrier,
         "barcode": barcode,
         "sender": sender,
-        "status": "IN_DELIVERY",
+        "status": status,
         "delivered": delivered,
         "delivered_at": delivered_at,
         "planned_from": planned_from,
@@ -317,44 +317,6 @@ def test_next_delivery_returns_none_when_no_timestamps():
 
 
 # ---------------------------------------------------------------------------
-# awaiting_pickup_from
-# ---------------------------------------------------------------------------
-
-
-def test_awaiting_pickup_counts_pickup_parcels():
-    parcels = [
-        _parcel(carrier="DHL", barcode="A", pickup=True, pickup_point="ServicePoint A"),
-        _parcel(carrier="PostNL", barcode="B", pickup=True),
-        _parcel(carrier="DHL", barcode="C", pickup=False),
-    ]
-    result = awaiting_pickup_from(parcels)
-    assert result["total"] == 2
-    assert result["by_carrier"] == {"DHL": 1, "PostNL": 1}
-    assert {p["barcode"] for p in result["parcels"]} == {"A", "B"}
-
-
-def test_awaiting_pickup_excludes_delivered():
-    parcels = [
-        _parcel(carrier="DHL", barcode="A", pickup=True, delivered=True),
-        _parcel(carrier="DHL", barcode="B", pickup=True, delivered=False),
-    ]
-    result = awaiting_pickup_from(parcels)
-    assert result["total"] == 1
-    assert result["parcels"][0]["barcode"] == "B"
-
-
-def test_awaiting_pickup_returns_zero_when_no_data():
-    result = awaiting_pickup_from([])
-    assert result == {"total": 0, "by_carrier": {}, "parcels": []}
-
-
-def test_awaiting_pickup_strips_raw_from_list():
-    parcels = [_parcel(pickup=True, raw={"big": "payload"})]
-    result = awaiting_pickup_from(parcels)
-    assert "raw" not in result["parcels"][0]
-
-
-# ---------------------------------------------------------------------------
 # Source discovery — bucket assignment by unique_id suffix
 # ---------------------------------------------------------------------------
 
@@ -380,6 +342,8 @@ async def test_discover_buckets_sources_by_suffix(hass):
     outgoing = _add("acc_outgoing_parcels")
     delivered = _add("acc_delivered_parcels")
     outgoing_delivered = _add("acc_outgoing_delivered_parcels")
+    en_route = _add("acc_en_route_to_pickup_point")
+    awaiting = _add("acc_awaiting_pickup")
 
     entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
     entry.add_to_hass(hass)
@@ -390,6 +354,122 @@ async def test_discover_buckets_sources_by_suffix(hass):
     assert outgoing in coordinator._sources["outgoing"]
     assert delivered in coordinator._sources["delivered"]
     assert outgoing_delivered in coordinator._sources["outgoing_delivered"]
+    assert en_route in coordinator._sources["en_route_to_pickup_point"]
+    assert awaiting in coordinator._sources["awaiting_pickup"]
     # Regression: the outgoing-delivered sensor must NOT be swallowed by the
     # shorter ``_delivered_parcels`` suffix.
     assert outgoing_delivered not in coordinator._sources["delivered"]
+
+
+async def _setup_with_sources(hass, sources: dict[tuple[str, str], tuple[str, dict]]):
+    """Register carrier source sensors, set their states, set up the aggregator."""
+    from homeassistant.helpers import entity_registry as er
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.parcel_aggregator.const import DOMAIN
+
+    registry = er.async_get(hass)
+    for (platform, unique_id), (state, attributes) in sources.items():
+        entity_id = registry.async_get_or_create("sensor", platform, unique_id).entity_id
+        hass.states.async_set(entity_id, state, attributes)
+
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    return entry.runtime_data.data
+
+
+@pytest.mark.asyncio
+async def test_en_route_to_pickup_point_merges_and_dedupes_across_carriers(hass):
+    shared = _parcel(carrier="PostNL", barcode="SHARED", pickup=True, planned_from="2026-09-26T10:00:00+00:00")
+    dpd = _parcel(carrier="DPD", barcode="DPD1", pickup=True, planned_from="2026-09-25T10:00:00+00:00")
+    data = await _setup_with_sources(hass, {
+        ("postnl", "a_en_route_to_pickup_point"): ("1", {"parcels": [shared]}),
+        ("postnl", "b_en_route_to_pickup_point"): ("1", {"parcels": [dict(shared)]}),
+        ("dpd", "e1_en_route_to_pickup_point"): ("1", {"parcels": [dpd]}),
+    })
+
+    bucket = data["en_route_to_pickup_point"]
+    assert bucket["total"] == 2
+    assert bucket["by_carrier"] == {"PostNL": 1, "DPD": 1}
+    assert [p["barcode"] for p in bucket["parcels"]] == ["DPD1", "SHARED"]
+    assert bucket["any_available"] is True
+
+
+@pytest.mark.asyncio
+async def test_en_route_to_pickup_point_unavailable_sources(hass):
+    data = await _setup_with_sources(hass, {
+        ("dpd", "e1_en_route_to_pickup_point"): ("unavailable", {}),
+        ("dpd", "e1_incoming_parcels"): ("0", {"parcels": []}),
+    })
+
+    bucket = data["en_route_to_pickup_point"]
+    assert bucket["total"] == 0
+    assert bucket["parcels"] == []
+    assert bucket["any_available"] is False
+
+
+@pytest.mark.asyncio
+async def test_awaiting_pickup_merges_and_dedupes_carrier_sources(hass):
+    shared = _parcel(carrier="PostNL", barcode="SHARED", status="at_pickup_point")
+    inpost = _parcel(carrier="InPost", barcode="LOCKER", status="at_pickup_point")
+    data = await _setup_with_sources(hass, {
+        ("postnl", "a_awaiting_pickup"): ("1", {"parcels": [shared]}),
+        ("postnl", "b_awaiting_pickup"): ("1", {"parcels": [dict(shared)]}),
+        ("inpost", "e1_awaiting_pickup"): ("1", {"parcels": [inpost]}),
+    })
+
+    bucket = data["awaiting_pickup"]
+    assert bucket["total"] == 2
+    assert bucket["by_carrier"] == {"PostNL": 1, "InPost": 1}
+    assert {p["barcode"] for p in bucket["parcels"]} == {"SHARED", "LOCKER"}
+    assert bucket["any_available"] is True
+
+
+@pytest.mark.asyncio
+async def test_awaiting_pickup_comes_only_from_carrier_sources(hass):
+    en_route = _parcel(carrier="DPD", barcode="EN_ROUTE", pickup=True)
+    ready = _parcel(carrier="DPD", barcode="READY", pickup=True, status="at_pickup_point")
+    no_sensor = _parcel(carrier="Trunkrs", barcode="NO_SENSOR", status="at_pickup_point")
+    data = await _setup_with_sources(hass, {
+        ("dpd", "e1_incoming_parcels"): ("2", {"parcels": [en_route, ready]}),
+        ("dpd", "e1_en_route_to_pickup_point"): ("1", {"parcels": [en_route]}),
+        ("dpd", "e1_awaiting_pickup"): ("1", {"parcels": [ready]}),
+        ("trunkrs", "e2_incoming_parcels"): ("1", {"parcels": [no_sensor]}),
+    })
+
+    assert [p["barcode"] for p in data["en_route_to_pickup_point"]["parcels"]] == ["EN_ROUTE"]
+    assert [p["barcode"] for p in data["awaiting_pickup"]["parcels"]] == ["READY"]
+
+
+@pytest.mark.asyncio
+async def test_awaiting_pickup_strips_raw(hass):
+    parcel = _parcel(carrier="DPD", status="at_pickup_point", raw={"big": "payload"})
+    data = await _setup_with_sources(hass, {
+        ("dpd", "e1_awaiting_pickup"): ("1", {"parcels": [parcel]}),
+    })
+
+    assert "raw" not in data["awaiting_pickup"]["parcels"][0]
+
+
+@pytest.mark.asyncio
+async def test_carrier_unique_id_migration_is_picked_up_after_setup(hass):
+    """A carrier renaming its summary unique_id after the aggregator started
+    (same entity_id) must land the sensor in the right bucket."""
+    from homeassistant.helpers import entity_registry as er
+
+    ready = _parcel(carrier="DHL", barcode="READY", pickup=True, status="at_pickup_point")
+    data = await _setup_with_sources(hass, {
+        ("dhl_nl", "user1_pickup_pending"): ("1", {"parcels": [ready]}),
+    })
+    assert data["awaiting_pickup"]["total"] == 0
+
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_entity_id("sensor", "dhl_nl", "user1_pickup_pending")
+    registry.async_update_entity(entity_id, new_unique_id="user1_awaiting_pickup")
+    await hass.async_block_till_done()
+
+    entry = hass.config_entries.async_entries("parcel_aggregator")[0]
+    assert entity_id in entry.runtime_data._sources["awaiting_pickup"]
+    assert [p["barcode"] for p in entry.runtime_data.data["awaiting_pickup"]["parcels"]] == ["READY"]
