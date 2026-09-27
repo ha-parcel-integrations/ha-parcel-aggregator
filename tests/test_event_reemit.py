@@ -214,6 +214,37 @@ async def test_paack_registered_event_is_reemitted_unified(hass):
 
 
 @pytest.mark.asyncio
+async def test_posti_registered_event_is_reemitted_unified(hass):
+    """A Posti event is discovered and re-emitted through the shared stream."""
+    assert KNOWN_CARRIERS["posti"] == "Posti"
+    assert CARRIER_EVENT_PREFIXES["posti"] == "posti"
+
+    entry = _add_entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    captured = _capture(hass, EVENT_PARCEL_REGISTERED)
+    hass.bus.async_fire(
+        "posti_parcel_registered",
+        {
+            "carrier": "Posti",
+            "barcode": "JJFI00000000000001",
+            "status": ParcelStatus.REGISTERED,
+            "raw_status": "Registered",
+            "raw": {"carrier_payload": "kept at source"},
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert len(captured) == 1
+    payload = captured[0].data
+    assert payload["carrier"] == "Posti"
+    assert payload["barcode"] == "JJFI00000000000001"
+    assert payload["status"] == ParcelStatus.REGISTERED
+    assert "raw" not in payload
+
+
+@pytest.mark.asyncio
 async def test_postnl_registered_event_is_reemitted_unified(hass):
     """A postnl_parcel_registered event triggers parcel_aggregator_parcel_registered."""
     entry = _add_entry(hass)
