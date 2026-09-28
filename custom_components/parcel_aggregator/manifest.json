@@ -1,7 +1,7 @@
 {
   "domain": "parcel_aggregator",
   "name": "Parcel Aggregator",
-  "codeowners": ["@peternijssen"],
+  "codeowners": ["@peter-mdf"],
   "config_flow": true,
   "documentation": "https://github.com/ha-parcel-integrations/ha-parcel-aggregator",
   "integration_type": "service",
