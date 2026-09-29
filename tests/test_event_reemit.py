@@ -245,6 +245,37 @@ async def test_posti_registered_event_is_reemitted_unified(hass):
 
 
 @pytest.mark.asyncio
+async def test_mondial_relay_registered_event_is_reemitted_unified(hass):
+    """A Mondial Relay event is discovered and re-emitted through the shared stream."""
+    assert KNOWN_CARRIERS["mondial_relay"] == "Mondial Relay"
+    assert CARRIER_EVENT_PREFIXES["mondial_relay"] == "mondial_relay"
+
+    entry = _add_entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    captured = _capture(hass, EVENT_PARCEL_REGISTERED)
+    hass.bus.async_fire(
+        "mondial_relay_parcel_registered",
+        {
+            "carrier": "Mondial Relay",
+            "barcode": "MR-TEST-0001",
+            "status": ParcelStatus.UNKNOWN,
+            "raw_status": "3",
+            "raw": {"carrier_payload": "kept at source"},
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert len(captured) == 1
+    payload = captured[0].data
+    assert payload["carrier"] == "Mondial Relay"
+    assert payload["barcode"] == "MR-TEST-0001"
+    assert payload["status"] == ParcelStatus.UNKNOWN
+    assert "raw" not in payload
+
+
+@pytest.mark.asyncio
 async def test_postnl_registered_event_is_reemitted_unified(hass):
     """A postnl_parcel_registered event triggers parcel_aggregator_parcel_registered."""
     entry = _add_entry(hass)
