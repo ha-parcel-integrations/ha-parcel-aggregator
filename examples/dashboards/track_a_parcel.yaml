@@ -1,9 +1,9 @@
 # Add a tracking code to any carrier straight from a dashboard: pick the
 # carrier, type the code, press Track. Unlike the other cards this one needs
-# two helpers and a script first — the parts are marked in the YAML. The
-# helpers go in configuration.yaml (or Settings → Devices & services →
-# Helpers), the script in scripts.yaml, and the card at the bottom is pasted
-# as a manual card.
+# helpers and a script first. The helpers at the top go in
+# configuration.yaml (or Settings → Devices & services → Helpers), the script
+# in scripts.yaml, and the card at the bottom is pasted as a manual card. Put
+# the domains of your own carriers in the dropdown's `options`.
 #
 # Every carrier that tracks single codes exposes the same action,
 # `<domain>.track_parcel`, so one script serves all of them: the dropdown
@@ -12,16 +12,12 @@
 # such as PostNL, DHL NL or DPD, have no `track_parcel` action — leave them
 # out of the list.
 #
-# The postal code is only sent when you fill it in, so it is safe to leave
-# empty for carriers that don't take one. bpost, Dynalogic, Evri, GLS,
-# Slovak Parcel Service and Trunkrs accept it, and some only show the full
-# details with it. To stop tracking a code, call `<domain>.untrack_parcel`
-# with the same `tracking_code`.
+# The postal code is only sent when you fill it in, so leave it empty for
+# carriers that don't take one. bpost, Dynalogic, Evri, GLS, Slovak Parcel
+# Service and Trunkrs use it to pick the right hub when you have set up more
+# than one; with a single hub it isn't needed. To stop tracking a code, call
+# `<domain>.untrack_parcel` with the same `tracking_code`.
 
-# ---------------------------------------------------------------------------
-# 1) Helpers — configuration.yaml. Put the domains of your own carriers in
-#    `options`.
-# ---------------------------------------------------------------------------
 input_select:
   parcel_carrier:
     name: Carrier
@@ -42,8 +38,8 @@ input_text:
     max: 10
 
 # ---------------------------------------------------------------------------
-# 2) Script — scripts.yaml. Tracks the code with the selected carrier, then
-#    clears both text fields.
+# Script — scripts.yaml. Tracks the code with the selected carrier, then
+# clears both text fields.
 # ---------------------------------------------------------------------------
 track_parcel_from_dashboard:
   alias: Track a parcel
@@ -76,8 +72,8 @@ track_parcel_from_dashboard:
         value: ""
 
 # ---------------------------------------------------------------------------
-# 3) Card — Edit dashboard → + Add card → Manual, paste without the leading
-#    "# ".
+# Card — Edit dashboard → + Add card → Manual, paste without the leading
+# "# ".
 # ---------------------------------------------------------------------------
 # type: entities
 # title: Track a parcel
