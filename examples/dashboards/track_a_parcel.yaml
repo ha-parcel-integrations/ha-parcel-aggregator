@@ -1,0 +1,94 @@
+# Add a tracking code to any carrier straight from a dashboard: pick the
+# carrier, type the code, press Track. Unlike the other cards this one needs
+# two helpers and a script first — the parts are marked in the YAML. The
+# helpers go in configuration.yaml (or Settings → Devices & services →
+# Helpers), the script in scripts.yaml, and the card at the bottom is pasted
+# as a manual card.
+#
+# Every carrier that tracks single codes exposes the same action,
+# `<domain>.track_parcel`, so one script serves all of them: the dropdown
+# holds integration domains (`gls`, `ups`, `bpost`, …) and the script calls
+# the action of whichever is selected. Carriers that only read your account,
+# such as PostNL, DHL NL or DPD, have no `track_parcel` action — leave them
+# out of the list.
+#
+# The postal code is only sent when you fill it in, so it is safe to leave
+# empty for carriers that don't take one. bpost, Dynalogic, Evri, GLS,
+# Slovak Parcel Service and Trunkrs accept it, and some only show the full
+# details with it. To stop tracking a code, call `<domain>.untrack_parcel`
+# with the same `tracking_code`.
+
+# ---------------------------------------------------------------------------
+# 1) Helpers — configuration.yaml. Put the domains of your own carriers in
+#    `options`.
+# ---------------------------------------------------------------------------
+input_select:
+  parcel_carrier:
+    name: Carrier
+    icon: mdi:truck-delivery
+    options:
+      - gls
+      - ups
+      - bpost
+
+input_text:
+  parcel_tracking_code:
+    name: Tracking code
+    icon: mdi:barcode
+    max: 40
+  parcel_postal_code:
+    name: Postal code (optional)
+    icon: mdi:mailbox
+    max: 10
+
+# ---------------------------------------------------------------------------
+# 2) Script — scripts.yaml. Tracks the code with the selected carrier, then
+#    clears both text fields.
+# ---------------------------------------------------------------------------
+track_parcel_from_dashboard:
+  alias: Track a parcel
+  icon: mdi:package-variant-plus
+  sequence:
+    - variables:
+        carrier: "{{ states('input_select.parcel_carrier') }}"
+        code: "{{ states('input_text.parcel_tracking_code') | trim }}"
+        postal_code: "{{ states('input_text.parcel_postal_code') | trim }}"
+    - condition: template
+      value_template: "{{ code | string != '' }}"
+    - if:
+        - condition: template
+          value_template: "{{ postal_code | string != '' }}"
+      then:
+        - action: "{{ carrier }}.track_parcel"
+          data:
+            tracking_code: "{{ code }}"
+            postal_code: "{{ postal_code }}"
+      else:
+        - action: "{{ carrier }}.track_parcel"
+          data:
+            tracking_code: "{{ code }}"
+    - action: input_text.set_value
+      target:
+        entity_id:
+          - input_text.parcel_tracking_code
+          - input_text.parcel_postal_code
+      data:
+        value: ""
+
+# ---------------------------------------------------------------------------
+# 3) Card — Edit dashboard → + Add card → Manual, paste without the leading
+#    "# ".
+# ---------------------------------------------------------------------------
+# type: entities
+# title: Track a parcel
+# entities:
+#   - entity: input_select.parcel_carrier
+#   - entity: input_text.parcel_tracking_code
+#   - entity: input_text.parcel_postal_code
+#   - type: button
+#     name: Track
+#     icon: mdi:package-variant-plus
+#     action_name: Track
+#     tap_action:
+#       action: perform-action
+#       perform_action: script.track_parcel_from_dashboard
