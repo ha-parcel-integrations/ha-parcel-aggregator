@@ -23,6 +23,7 @@ from .const import (
     EVENT_PARCEL_REGISTERED,
     EVENT_PARCEL_STATUS_CHANGED,
     KNOWN_CARRIERS,
+    SHOP_DOMAINS,
     SOURCE_SUFFIXES,
 )
 
@@ -53,6 +54,9 @@ def parse_timestamp_state(value: str | None) -> datetime | None:
 
 def dedupe_parcels(parcels: list[dict]) -> list[dict]:
     """Collapse parcels sharing a ``(carrier, barcode)`` key, keeping the first seen.
+
+    Callers pass shop sources last (``SHOP_DOMAINS``), so a carrier's own record
+    wins over a shop's copy of the same parcel.
 
     A parcel with shared visibility (e.g. two housemates' PostNL accounts both
     seeing the same delivery) is reported by every source instance that can see
@@ -402,7 +406,8 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def _collect_parcels(self, bucket: str) -> list[dict]:
         attr_key = ATTR_KEY_BY_BUCKET[bucket]
         out: list[dict] = []
-        for entity_id in self._sources[bucket]:
+        sources = self._sources[bucket]
+        for entity_id in sorted(sources, key=lambda e: sources[e] in SHOP_DOMAINS):
             state = self.hass.states.get(entity_id)
             if not state:
                 continue

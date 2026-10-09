@@ -42,6 +42,11 @@ This repo follows it exactly.
   `SOURCE_SUFFIXES` (`unique_id` suffix → bucket: incoming / outgoing / delivered
   / outgoing_delivered), `ATTR_KEY_BY_BUCKET` (bucket → source attribute key,
   always `parcels`).
+- **Shop sources lose the dedupe.** Parcels are deduped on `(carrier, barcode)`,
+  first seen wins. A shop (`SHOP_DOMAINS`, today only `amazon_orders`) reports
+  the delivering courier as `carrier`, so its copy collides with that carrier's
+  own record; `_collect_parcels` reads shop sources last so the carrier's richer
+  record wins. Don't drop the sort for registry order.
 - **Longest-suffix matching in `_discover`**: `_outgoing_delivered_parcels` also
   ends with `_delivered_parcels`, so discovery iterates suffixes **longest-first**
   and breaks on first match. Do not revert to dict-order iteration — delivered

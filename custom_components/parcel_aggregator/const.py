@@ -188,6 +188,11 @@ EVENT_PARCEL_DELIVERY_TIME_CHANGED = f"{DOMAIN}_parcel_delivery_time_changed"
 EVENT_OUTGOING_PARCEL_STATUS_CHANGED = f"{DOMAIN}_outgoing_parcel_status_changed"
 EVENT_OUTGOING_PARCEL_DELIVERED = f"{DOMAIN}_outgoing_parcel_delivered"
 
+# Shops list what was ordered, not where it is; when a carrier integration
+# reports the same parcel, its record is richer, so shop sources are read last
+# and lose the dedupe.
+SHOP_DOMAINS: frozenset[str] = frozenset({"amazon_orders"})
+
 # Source sensor unique_id suffix → aggregation bucket name.
 #
 # NB: ``_outgoing_delivered_parcels`` also ends with ``_delivered_parcels``,

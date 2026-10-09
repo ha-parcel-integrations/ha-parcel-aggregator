@@ -473,3 +473,18 @@ async def test_carrier_unique_id_migration_is_picked_up_after_setup(hass):
     entry = hass.config_entries.async_entries("parcel_aggregator")[0]
     assert entity_id in entry.runtime_data._sources["awaiting_pickup"]
     assert [p["barcode"] for p in entry.runtime_data.data["awaiting_pickup"]["parcels"]] == ["READY"]
+
+
+@pytest.mark.asyncio
+async def test_a_carrier_record_wins_over_the_shop_copy(hass):
+    shop = _parcel(carrier="DHL", barcode="JVGL1", sender="Amazon")
+    carrier = _parcel(carrier="DHL", barcode="JVGL1", sender="Seller")
+    # The shop source is registered first, so registry order alone would keep it.
+    data = await _setup_with_sources(hass, {
+        ("amazon_orders", "a_incoming_parcels"): ("1", {"parcels": [shop]}),
+        ("dhl", "b_incoming_parcels"): ("1", {"parcels": [carrier]}),
+    })
+
+    parcels = data["incoming"]["parcels"]
+    assert len(parcels) == 1
+    assert parcels[0]["sender"] == "Seller"
