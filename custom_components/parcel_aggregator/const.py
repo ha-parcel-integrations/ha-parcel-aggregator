@@ -32,6 +32,7 @@ class ParcelStatus(StrEnum):
 # Maps the HA integration domain → human-friendly carrier label used in attributes.
 KNOWN_CARRIERS: dict[str, str] = {
     "airmee": "Airmee",
+    "amazon_orders": "Amazon",
     "ampere": "Ampère",
     "an_post": "An Post",
     "apple_express": "Apple Express",
@@ -112,6 +113,7 @@ KNOWN_CARRIERS: dict[str, str] = {
 # ships the event contract.
 CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "airmee": "airmee",
+    "amazon_orders": "amazon_orders",
     "ampere": "ampere",
     "an_post": "an_post",
     "apple_express": "apple_express",
