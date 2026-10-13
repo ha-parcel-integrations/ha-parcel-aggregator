@@ -122,6 +122,7 @@ CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "acs_courier": "acs_courier",
     "airmee": "airmee",
     "amazon_orders": "amazon_orders",
+    "amazon_shipping": "amazon_shipping",
     "ampere": "ampere",
     "an_post": "an_post",
     "apple_express": "apple_express",
