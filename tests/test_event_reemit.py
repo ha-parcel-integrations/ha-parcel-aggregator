@@ -487,3 +487,34 @@ async def test_dragonfly_registered_event_is_reemitted_unified(hass):
     assert payload["barcode"] == "INTLCMB2C000123456"
     assert payload["status"] == ParcelStatus.REGISTERED
     assert "raw" not in payload
+
+
+@pytest.mark.asyncio
+async def test_delivery_tracker_delivered_event_is_reemitted_unified(hass):
+    """A Delivery Tracker event is re-emitted; its parcels carry their own carrier."""
+    assert KNOWN_CARRIERS["delivery_tracker"] == "Delivery Tracker"
+    assert CARRIER_EVENT_PREFIXES["delivery_tracker"] == "delivery_tracker"
+
+    entry = _add_entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    captured = _capture(hass, EVENT_PARCEL_DELIVERED)
+    hass.bus.async_fire(
+        "delivery_tracker_parcel_delivered",
+        {
+            "carrier": "Royal Mail",
+            "barcode": "AB123456789GB",
+            "status": ParcelStatus.DELIVERED,
+            "raw_status": "royal_mail.delivered",
+            "raw": {"carrier_payload": "kept at source"},
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert len(captured) == 1
+    payload = captured[0].data
+    assert payload["carrier"] == "Royal Mail"
+    assert payload["barcode"] == "AB123456789GB"
+    assert payload["status"] == ParcelStatus.DELIVERED
+    assert "raw" not in payload
