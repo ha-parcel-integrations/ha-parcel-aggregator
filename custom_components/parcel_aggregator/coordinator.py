@@ -216,14 +216,18 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
 
     @callback
-    def _on_registry_updated(self, event: Event) -> None:
+    def _on_registry_updated(
+        self, event: Event[er.EventEntityRegistryUpdatedData]
+    ) -> None:
         """Re-discover when a carrier source sensor (dis)appears."""
         if not self._registry_event_is_relevant(event):
             return
         self._refresh_sources()
         self.async_set_updated_data(self._compute())
 
-    def _registry_event_is_relevant(self, event: Event) -> bool:
+    def _registry_event_is_relevant(
+        self, event: Event[er.EventEntityRegistryUpdatedData]
+    ) -> bool:
         entity_id: str = event.data.get("entity_id", "")
         if event.data.get("action") == "remove":
             return entity_id in self._watched_entity_ids()
