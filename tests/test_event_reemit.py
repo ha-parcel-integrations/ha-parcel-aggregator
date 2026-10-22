@@ -1,5 +1,7 @@
 """Tests for the per-carrier event re-emit layer."""
+
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.parcel_aggregator.const import (
     CARRIER_EVENT_PREFIXES,
@@ -16,8 +18,6 @@ from custom_components.parcel_aggregator.const import (
 
 
 def _add_entry(hass):
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
-
     entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
     entry.add_to_hass(hass)
     return entry
@@ -423,9 +423,7 @@ async def test_unload_stops_event_reemission(hass):
     await hass.async_block_till_done()
 
     captured = _capture(hass, EVENT_PARCEL_REGISTERED)
-    hass.bus.async_fire(
-        "dhl_nl_parcel_registered", {"carrier": "DHL", "barcode": "B"}
-    )
+    hass.bus.async_fire("dhl_nl_parcel_registered", {"carrier": "DHL", "barcode": "B"})
     await hass.async_block_till_done()
 
     assert captured == []

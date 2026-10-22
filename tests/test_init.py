@@ -1,14 +1,14 @@
 """Tests for the Parcel Aggregator setup/unload entry points."""
-import pytest
+
 from homeassistant.config_entries import ConfigEntryState
+import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.parcel_aggregator.const import DOMAIN
 from custom_components.parcel_aggregator.coordinator import ParcelAggregatorCoordinator
 
 
 def _add_entry(hass):
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
-
     entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
     entry.add_to_hass(hass)
     return entry

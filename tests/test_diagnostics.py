@@ -1,4 +1,5 @@
 """Tests for the Parcel Aggregator diagnostics handler."""
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -11,7 +12,9 @@ from custom_components.parcel_aggregator.diagnostics import (
 REDACTED = "**REDACTED**"
 
 
-def _entry(*, sources: dict[str, dict[str, str]] | None = None, data: dict | None = None) -> MagicMock:
+def _entry(
+    *, sources: dict[str, dict[str, str]] | None = None, data: dict | None = None
+) -> MagicMock:
     coordinator = MagicMock()
     coordinator._sources = sources or {"incoming": {}, "outgoing": {}, "delivered": {}}
     coordinator.data = data

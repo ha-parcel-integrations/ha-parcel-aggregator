@@ -14,6 +14,7 @@ level) so this file stays importable — and this platform simply contributes
 nothing — on every HA version that predates it, instead of crashing at
 import time.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -36,10 +37,7 @@ def async_get_tools(
     """Return the Parcel Aggregator LLM tool when parcels are exposed."""
     try:
         from homeassistant.components.llm import LLMTools  # noqa: PLC0415
-        from homeassistant.helpers.llm import (  # noqa: PLC0415
-            LLM_API_ASSIST,
-            IntentTool,
-        )
+        from homeassistant.helpers.llm import LLM_API_ASSIST, IntentTool  # noqa: PLC0415
     except ImportError:
         return None
 

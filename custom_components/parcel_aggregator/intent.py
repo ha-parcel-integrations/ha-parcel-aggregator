@@ -7,13 +7,14 @@ instead of just the bucket's bare count. Triggered either by the default
 ``config/custom_sentences/<lang>/`` (see the README), or automatically by an
 LLM-based Assist agent through the wrapper in ``llm.py``.
 """
+
 from __future__ import annotations
 
 from typing import override
 
-import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import intent
+import voluptuous as vol
 
 from .assist import (
     ASSIST_BUCKETS,

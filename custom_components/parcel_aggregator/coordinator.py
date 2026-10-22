@@ -1,14 +1,14 @@
 """Coordinator for the Parcel Aggregator integration."""
+
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import logging
-from datetime import datetime, timezone
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
-from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers import entity_registry as er, issue_registry as ir
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -44,11 +44,11 @@ def parse_timestamp_state(value: str | None) -> datetime | None:
     if value in _UNAVAILABLE_STATES:
         return None
     try:
-        dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(str(value))
     except (TypeError, ValueError):
         return None
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     return dt
 
 
@@ -185,11 +185,7 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._unsub_event_listeners.clear()
 
     def _watched_entity_ids(self) -> set[str]:
-        return {
-            entity_id
-            for bucket in self._sources.values()
-            for entity_id in bucket
-        }
+        return {entity_id for bucket in self._sources.values() for entity_id in bucket}
 
     @callback
     def _refresh_sources(self) -> None:
@@ -204,9 +200,7 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self._unsub_listener = async_track_state_change_event(
                 self.hass, watched, self._on_source_state_change
             )
-            _LOGGER.debug(
-                "Parcel Aggregator watching %d source entities", len(watched)
-            )
+            _LOGGER.debug("Parcel Aggregator watching %d source entities", len(watched))
             ir.async_delete_issue(self.hass, DOMAIN, NO_SOURCES_ISSUE_ID)
         else:
             ir.async_create_issue(
@@ -334,7 +328,7 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     break
 
     @callback
-    def _on_source_state_change(self, event) -> None:  # noqa: ARG002 - event unused
+    def _on_source_state_change(self, event) -> None:
         self.async_set_updated_data(self._compute())
 
     def _compute(self) -> dict[str, Any]:

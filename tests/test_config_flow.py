@@ -1,7 +1,9 @@
 """Tests for the Parcel Aggregator config flow."""
-import pytest
+
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
+import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.parcel_aggregator.const import DOMAIN
 
@@ -20,7 +22,6 @@ async def test_user_flow_creates_entry(hass):
 @pytest.mark.asyncio
 async def test_user_flow_is_single_instance(hass):
     """A second flow attempt aborts because the integration is single-instance."""
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={}).add_to_hass(hass)
 

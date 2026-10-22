@@ -4,6 +4,7 @@ With 30 languages of hand-authored JSON/YAML, a typo or a missed key on one
 language is easy to miss in review. These tests catch structural drift —
 not translation quality, which stays a human/native-speaker concern.
 """
+
 import json
 import pathlib
 
@@ -13,7 +14,9 @@ import yaml
 from custom_components.parcel_aggregator.assist import ASSIST_BUCKETS, describe_bucket
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent
-ASSIST_STRINGS_DIR = REPO_ROOT / "custom_components" / "parcel_aggregator" / "assist_strings"
+ASSIST_STRINGS_DIR = (
+    REPO_ROOT / "custom_components" / "parcel_aggregator" / "assist_strings"
+)
 SENTENCES_DIR = REPO_ROOT / "examples" / "custom_sentences"
 
 
@@ -58,7 +61,9 @@ def test_assist_strings_keys_match_english(path, english_assist_keys):
 
 
 @pytest.mark.parametrize(
-    "lang_dir", sorted(d for d in SENTENCES_DIR.iterdir() if d.is_dir()), ids=lambda d: d.name
+    "lang_dir",
+    sorted(d for d in SENTENCES_DIR.iterdir() if d.is_dir()),
+    ids=lambda d: d.name,
 )
 def test_custom_sentences_file_is_valid_and_covers_all_buckets(lang_dir):
     path = lang_dir / "parcel_aggregator.yaml"
@@ -118,8 +123,6 @@ async def test_describe_bucket_renders_without_error_empty(hass, language, bucke
 @pytest.mark.asyncio
 @pytest.mark.parametrize("language", _ALL_LANGUAGES)
 async def test_describe_bucket_renders_without_error_with_parcels(hass, language):
-    info = {
-        "parcels": [_PARCEL_WITH_WINDOW, _PARCEL_ONLY_START, _PARCEL_STATUS_ONLY]
-    }
+    info = {"parcels": [_PARCEL_WITH_WINDOW, _PARCEL_ONLY_START, _PARCEL_STATUS_ONLY]}
     text = await describe_bucket(hass, info, "incoming", language=language)
     assert text

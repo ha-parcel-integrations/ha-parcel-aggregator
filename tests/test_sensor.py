@@ -1,5 +1,6 @@
 """Tests for the Parcel Aggregator sensor properties."""
-from datetime import datetime, timezone
+
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 from custom_components.parcel_aggregator.sensor import (
@@ -28,7 +29,9 @@ def _coordinator(data: dict | None) -> MagicMock:
 def test_incoming_sensor_reports_total_and_parcels():
     parcels = [{"barcode": "A"}, {"barcode": "B"}]
     sensor = ParcelsIncomingSensor(
-        _coordinator({"incoming": {"total": 2, "by_carrier": {"DHL": 2}, "parcels": parcels}})
+        _coordinator(
+            {"incoming": {"total": 2, "by_carrier": {"DHL": 2}, "parcels": parcels}}
+        )
     )
     assert sensor.native_value == 2
     attrs = sensor.extra_state_attributes
@@ -39,7 +42,9 @@ def test_incoming_sensor_reports_total_and_parcels():
 def test_outgoing_sensor_exposes_parcel_list_on_parcels_key():
     parcels = [{"barcode": "X"}]
     sensor = ParcelsOutgoingSensor(
-        _coordinator({"outgoing": {"total": 1, "by_carrier": {"PostNL": 1}, "parcels": parcels}})
+        _coordinator(
+            {"outgoing": {"total": 1, "by_carrier": {"PostNL": 1}, "parcels": parcels}}
+        )
     )
     assert sensor.native_value == 1
     attrs = sensor.extra_state_attributes
@@ -52,9 +57,15 @@ def test_outgoing_sensor_exposes_parcel_list_on_parcels_key():
 def test_outgoing_delivered_sensor_reports_total_and_parcels():
     parcels = [{"barcode": "R1"}, {"barcode": "R2"}]
     sensor = ParcelsOutgoingDeliveredSensor(
-        _coordinator({
-            "outgoing_delivered": {"total": 2, "by_carrier": {"DPD": 2}, "parcels": parcels}
-        })
+        _coordinator(
+            {
+                "outgoing_delivered": {
+                    "total": 2,
+                    "by_carrier": {"DPD": 2},
+                    "parcels": parcels,
+                }
+            }
+        )
     )
     assert sensor.native_value == 2
     attrs = sensor.extra_state_attributes
@@ -78,7 +89,13 @@ def test_awaiting_pickup_sensor_reports_pickup_parcels():
     parcels = [{"barcode": "P", "pickup": True}]
     sensor = ParcelsAwaitingPickupSensor(
         _coordinator(
-            {"awaiting_pickup": {"total": 1, "by_carrier": {"DPD": 1}, "parcels": parcels}}
+            {
+                "awaiting_pickup": {
+                    "total": 1,
+                    "by_carrier": {"DPD": 1},
+                    "parcels": parcels,
+                }
+            }
         )
     )
     assert sensor.native_value == 1
@@ -88,7 +105,15 @@ def test_awaiting_pickup_sensor_reports_pickup_parcels():
 def test_en_route_to_pickup_point_sensor_reports_source_parcels():
     parcels = [{"barcode": "P"}]
     sensor = ParcelsEnRouteToPickupPointSensor(
-        _coordinator({"en_route_to_pickup_point": {"total": 1, "by_carrier": {"DPD": 1}, "parcels": parcels}})
+        _coordinator(
+            {
+                "en_route_to_pickup_point": {
+                    "total": 1,
+                    "by_carrier": {"DPD": 1},
+                    "parcels": parcels,
+                }
+            }
+        )
     )
     assert sensor.unique_id == "parcel_aggregator_en_route_to_pickup_point"
     assert sensor.native_value == 1
@@ -101,7 +126,7 @@ def test_en_route_to_pickup_point_sensor_reports_source_parcels():
 
 
 def test_next_delivery_sensor_returns_value_and_parcel():
-    when = datetime(2026, 6, 16, 10, 0, tzinfo=timezone.utc)
+    when = datetime(2026, 6, 16, 10, 0, tzinfo=UTC)
     sensor = ParcelsNextDeliverySensor(
         _coordinator(
             {

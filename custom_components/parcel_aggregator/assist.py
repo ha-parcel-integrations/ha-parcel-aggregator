@@ -17,10 +17,11 @@ validates those two files against a fixed schema of known top-level keys
 (``entity``, ``config``, ``issues``, …) and rejects anything else, so a
 custom "assist" category there fails CI outright.
 """
+
 from __future__ import annotations
 
-import json
 from datetime import datetime
+import json
 from pathlib import Path
 from typing import Any
 
@@ -65,7 +66,9 @@ def _load_assist_file(lang: str) -> dict[str, str]:
     return _flatten(json.loads(path.read_text(encoding="utf-8")))
 
 
-async def get_assist_strings(hass: HomeAssistant, language: str | None) -> dict[str, str]:
+async def get_assist_strings(
+    hass: HomeAssistant, language: str | None
+) -> dict[str, str]:
     """Return the flattened assist strings for ``language``.
 
     English is loaded first and any language-specific file is merged on top

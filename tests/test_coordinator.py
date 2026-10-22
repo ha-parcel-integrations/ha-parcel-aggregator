@@ -1,9 +1,14 @@
 """Tests for the Parcel Aggregator's parsing and aggregation helpers."""
-from datetime import datetime, timezone
 
+from datetime import UTC, datetime
+
+from homeassistant.helpers import entity_registry as er
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.parcel_aggregator.const import DOMAIN
 from custom_components.parcel_aggregator.coordinator import (
+    ParcelAggregatorCoordinator,
     count_by_carrier,
     dedupe_parcels,
     next_delivery_from,
@@ -54,7 +59,7 @@ def test_parse_timestamp_parses_iso_with_tz():
 
 def test_parse_timestamp_parses_z_suffix():
     dt = parse_timestamp_state("2026-06-12T10:00:00Z")
-    assert dt == datetime(2026, 6, 12, 10, 0, 0, tzinfo=timezone.utc)
+    assert dt == datetime(2026, 6, 12, 10, 0, 0, tzinfo=UTC)
 
 
 def test_parse_timestamp_returns_none_for_unavailable():
@@ -72,7 +77,7 @@ def test_parse_timestamp_treats_naive_iso_as_utc():
     # "can't compare offset-naive and offset-aware datetimes". Naive values
     # must come back tagged so every result is mutually comparable.
     dt = parse_timestamp_state("2026-06-12T10:00:00")
-    assert dt == datetime(2026, 6, 12, 10, 0, 0, tzinfo=timezone.utc)
+    assert dt == datetime(2026, 6, 12, 10, 0, 0, tzinfo=UTC)
 
 
 # ---------------------------------------------------------------------------
@@ -149,7 +154,13 @@ def test_strip_raw_is_noop_when_raw_missing():
 def test_strip_raw_keeps_top_level_history():
     """The opt-in history timeline is a top-level field, so it survives
     strip_raw() and flows through the aggregator unchanged."""
-    history = [{"timestamp": "2026-06-24T17:23:13Z", "status": "delivered", "raw_status": "DELIVERED"}]
+    history = [
+        {
+            "timestamp": "2026-06-24T17:23:13Z",
+            "status": "delivered",
+            "raw_status": "DELIVERED",
+        }
+    ]
     parcel = {**_parcel(), "history": history}
     stripped = strip_raw(parcel)
     assert "raw" not in stripped
@@ -157,7 +168,13 @@ def test_strip_raw_keeps_top_level_history():
 
 
 def test_next_delivery_keeps_history_on_the_parcel():
-    history = [{"timestamp": "2026-06-20T09:00:00Z", "status": "in_transit", "raw_status": "PARCEL_SORTED_AT_HUB"}]
+    history = [
+        {
+            "timestamp": "2026-06-20T09:00:00Z",
+            "status": "in_transit",
+            "raw_status": "PARCEL_SORTED_AT_HUB",
+        }
+    ]
     parcel = {**_parcel(planned_from="2026-06-20T09:00:00Z"), "history": history}
     result = next_delivery_from([parcel])
     assert result["parcel"]["history"] == history
@@ -181,11 +198,20 @@ def test_sort_parcels_orders_ascending_by_planned_from():
 
 def test_sort_parcels_orders_descending_for_delivered_at():
     parcels = [
-        _parcel(barcode="oldest", delivered=True, delivered_at="2026-06-13T08:00:00+00:00"),
-        _parcel(barcode="newest", delivered=True, delivered_at="2026-06-15T10:00:00+00:00"),
-        _parcel(barcode="mid", delivered=True, delivered_at="2026-06-14T12:00:00+00:00"),
+        _parcel(
+            barcode="oldest", delivered=True, delivered_at="2026-06-13T08:00:00+00:00"
+        ),
+        _parcel(
+            barcode="newest", delivered=True, delivered_at="2026-06-15T10:00:00+00:00"
+        ),
+        _parcel(
+            barcode="mid", delivered=True, delivered_at="2026-06-14T12:00:00+00:00"
+        ),
     ]
-    ordered = [p["barcode"] for p in sort_parcels_by_ts(parcels, "delivered_at", descending=True)]
+    ordered = [
+        p["barcode"]
+        for p in sort_parcels_by_ts(parcels, "delivered_at", descending=True)
+    ]
     assert ordered == ["newest", "mid", "oldest"]
 
 
@@ -204,10 +230,17 @@ def test_sort_parcels_keeps_missing_timestamps_at_end():
 def test_sort_parcels_missing_timestamps_stay_at_end_when_descending():
     parcels = [
         _parcel(barcode="no-ts", delivered=True, delivered_at=None),
-        _parcel(barcode="newer", delivered=True, delivered_at="2026-06-15T10:00:00+00:00"),
-        _parcel(barcode="older", delivered=True, delivered_at="2026-06-13T10:00:00+00:00"),
+        _parcel(
+            barcode="newer", delivered=True, delivered_at="2026-06-15T10:00:00+00:00"
+        ),
+        _parcel(
+            barcode="older", delivered=True, delivered_at="2026-06-13T10:00:00+00:00"
+        ),
     ]
-    ordered = [p["barcode"] for p in sort_parcels_by_ts(parcels, "delivered_at", descending=True)]
+    ordered = [
+        p["barcode"]
+        for p in sort_parcels_by_ts(parcels, "delivered_at", descending=True)
+    ]
     assert ordered == ["newer", "older", "no-ts"]
 
 
@@ -224,10 +257,6 @@ def test_sort_parcels_empty_input_returns_empty_list():
 async def test_shared_parcel_across_two_accounts_is_deduped(hass):
     """Regression for issue #7: two PostNL accounts with shared visibility
     both report the same barcode — the aggregator must count it once."""
-    from homeassistant.helpers import entity_registry as er
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
-
-    from custom_components.parcel_aggregator.const import DOMAIN
 
     entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
     entry.add_to_hass(hass)
@@ -251,12 +280,8 @@ async def test_shared_parcel_across_two_accounts_is_deduped(hass):
     shared_parcel_via_b = _parcel(
         carrier="PostNL", barcode="AAAA1111111111", sender="Shop One"
     )
-    hass.states.async_set(
-        source_entity_ids[0], "1", {"parcels": [shared_parcel_via_a]}
-    )
-    hass.states.async_set(
-        source_entity_ids[1], "1", {"parcels": [shared_parcel_via_b]}
-    )
+    hass.states.async_set(source_entity_ids[0], "1", {"parcels": [shared_parcel_via_a]})
+    hass.states.async_set(source_entity_ids[1], "1", {"parcels": [shared_parcel_via_b]})
 
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
@@ -276,11 +301,13 @@ async def test_shared_parcel_across_two_accounts_is_deduped(hass):
 def test_next_delivery_picks_earliest_across_carriers():
     parcels = [
         _parcel(carrier="DHL", barcode="A", planned_from="2026-06-15T10:00:00+00:00"),
-        _parcel(carrier="PostNL", barcode="B", planned_from="2026-06-13T08:00:00+00:00"),
+        _parcel(
+            carrier="PostNL", barcode="B", planned_from="2026-06-13T08:00:00+00:00"
+        ),
         _parcel(carrier="DPD", barcode="C", planned_from="2026-06-14T12:00:00+00:00"),
     ]
     result = next_delivery_from(parcels)
-    assert result["value"] == datetime(2026, 6, 13, 8, 0, 0, tzinfo=timezone.utc)
+    assert result["value"] == datetime(2026, 6, 13, 8, 0, 0, tzinfo=UTC)
     assert result["parcel"]["barcode"] == "B"
     assert result["parcel"]["carrier"] == "PostNL"
     # raw is stripped from the surfaced parcel
@@ -293,13 +320,15 @@ def test_next_delivery_by_carrier_keeps_earliest_per_carrier():
         _parcel(carrier="DHL", barcode="B", planned_from="2026-06-13T10:00:00+00:00"),
     ]
     result = next_delivery_from(parcels)
-    assert result["by_carrier"]["DHL"] == datetime(2026, 6, 13, 10, 0, 0, tzinfo=timezone.utc)
+    assert result["by_carrier"]["DHL"] == datetime(2026, 6, 13, 10, 0, 0, tzinfo=UTC)
 
 
 def test_next_delivery_skips_parcels_without_planned_from():
     parcels = [
         _parcel(carrier="DHL", barcode="A", planned_from=None),
-        _parcel(carrier="PostNL", barcode="B", planned_from="2026-06-13T10:00:00+00:00"),
+        _parcel(
+            carrier="PostNL", barcode="B", planned_from="2026-06-13T10:00:00+00:00"
+        ),
     ]
     result = next_delivery_from(parcels)
     assert result["parcel"]["barcode"] == "B"
@@ -325,13 +354,6 @@ def test_next_delivery_returns_none_when_no_timestamps():
 async def test_discover_buckets_sources_by_suffix(hass):
     """A carrier's outgoing-delivered sensor must land in its own bucket, not
     in ``delivered`` — its unique_id also ends with ``_delivered_parcels``."""
-    from homeassistant.helpers import entity_registry as er
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
-
-    from custom_components.parcel_aggregator.const import DOMAIN
-    from custom_components.parcel_aggregator.coordinator import (
-        ParcelAggregatorCoordinator,
-    )
 
     reg = er.async_get(hass)
 
@@ -363,14 +385,12 @@ async def test_discover_buckets_sources_by_suffix(hass):
 
 async def _setup_with_sources(hass, sources: dict[tuple[str, str], tuple[str, dict]]):
     """Register carrier source sensors, set their states, set up the aggregator."""
-    from homeassistant.helpers import entity_registry as er
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
-
-    from custom_components.parcel_aggregator.const import DOMAIN
 
     registry = er.async_get(hass)
     for (platform, unique_id), (state, attributes) in sources.items():
-        entity_id = registry.async_get_or_create("sensor", platform, unique_id).entity_id
+        entity_id = registry.async_get_or_create(
+            "sensor", platform, unique_id
+        ).entity_id
         hass.states.async_set(entity_id, state, attributes)
 
     entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
@@ -382,13 +402,29 @@ async def _setup_with_sources(hass, sources: dict[tuple[str, str], tuple[str, di
 
 @pytest.mark.asyncio
 async def test_en_route_to_pickup_point_merges_and_dedupes_across_carriers(hass):
-    shared = _parcel(carrier="PostNL", barcode="SHARED", pickup=True, planned_from="2026-09-26T10:00:00+00:00")
-    dpd = _parcel(carrier="DPD", barcode="DPD1", pickup=True, planned_from="2026-09-25T10:00:00+00:00")
-    data = await _setup_with_sources(hass, {
-        ("postnl", "a_en_route_to_pickup_point"): ("1", {"parcels": [shared]}),
-        ("postnl", "b_en_route_to_pickup_point"): ("1", {"parcels": [dict(shared)]}),
-        ("dpd", "e1_en_route_to_pickup_point"): ("1", {"parcels": [dpd]}),
-    })
+    shared = _parcel(
+        carrier="PostNL",
+        barcode="SHARED",
+        pickup=True,
+        planned_from="2026-09-26T10:00:00+00:00",
+    )
+    dpd = _parcel(
+        carrier="DPD",
+        barcode="DPD1",
+        pickup=True,
+        planned_from="2026-09-25T10:00:00+00:00",
+    )
+    data = await _setup_with_sources(
+        hass,
+        {
+            ("postnl", "a_en_route_to_pickup_point"): ("1", {"parcels": [shared]}),
+            ("postnl", "b_en_route_to_pickup_point"): (
+                "1",
+                {"parcels": [dict(shared)]},
+            ),
+            ("dpd", "e1_en_route_to_pickup_point"): ("1", {"parcels": [dpd]}),
+        },
+    )
 
     bucket = data["en_route_to_pickup_point"]
     assert bucket["total"] == 2
@@ -399,10 +435,13 @@ async def test_en_route_to_pickup_point_merges_and_dedupes_across_carriers(hass)
 
 @pytest.mark.asyncio
 async def test_en_route_to_pickup_point_unavailable_sources(hass):
-    data = await _setup_with_sources(hass, {
-        ("dpd", "e1_en_route_to_pickup_point"): ("unavailable", {}),
-        ("dpd", "e1_incoming_parcels"): ("0", {"parcels": []}),
-    })
+    data = await _setup_with_sources(
+        hass,
+        {
+            ("dpd", "e1_en_route_to_pickup_point"): ("unavailable", {}),
+            ("dpd", "e1_incoming_parcels"): ("0", {"parcels": []}),
+        },
+    )
 
     bucket = data["en_route_to_pickup_point"]
     assert bucket["total"] == 0
@@ -414,11 +453,14 @@ async def test_en_route_to_pickup_point_unavailable_sources(hass):
 async def test_awaiting_pickup_merges_and_dedupes_carrier_sources(hass):
     shared = _parcel(carrier="PostNL", barcode="SHARED", status="at_pickup_point")
     inpost = _parcel(carrier="InPost", barcode="LOCKER", status="at_pickup_point")
-    data = await _setup_with_sources(hass, {
-        ("postnl", "a_awaiting_pickup"): ("1", {"parcels": [shared]}),
-        ("postnl", "b_awaiting_pickup"): ("1", {"parcels": [dict(shared)]}),
-        ("inpost", "e1_awaiting_pickup"): ("1", {"parcels": [inpost]}),
-    })
+    data = await _setup_with_sources(
+        hass,
+        {
+            ("postnl", "a_awaiting_pickup"): ("1", {"parcels": [shared]}),
+            ("postnl", "b_awaiting_pickup"): ("1", {"parcels": [dict(shared)]}),
+            ("inpost", "e1_awaiting_pickup"): ("1", {"parcels": [inpost]}),
+        },
+    )
 
     bucket = data["awaiting_pickup"]
     assert bucket["total"] == 2
@@ -430,25 +472,37 @@ async def test_awaiting_pickup_merges_and_dedupes_carrier_sources(hass):
 @pytest.mark.asyncio
 async def test_awaiting_pickup_comes_only_from_carrier_sources(hass):
     en_route = _parcel(carrier="DPD", barcode="EN_ROUTE", pickup=True)
-    ready = _parcel(carrier="DPD", barcode="READY", pickup=True, status="at_pickup_point")
-    no_sensor = _parcel(carrier="Trunkrs", barcode="NO_SENSOR", status="at_pickup_point")
-    data = await _setup_with_sources(hass, {
-        ("dpd", "e1_incoming_parcels"): ("2", {"parcels": [en_route, ready]}),
-        ("dpd", "e1_en_route_to_pickup_point"): ("1", {"parcels": [en_route]}),
-        ("dpd", "e1_awaiting_pickup"): ("1", {"parcels": [ready]}),
-        ("trunkrs", "e2_incoming_parcels"): ("1", {"parcels": [no_sensor]}),
-    })
+    ready = _parcel(
+        carrier="DPD", barcode="READY", pickup=True, status="at_pickup_point"
+    )
+    no_sensor = _parcel(
+        carrier="Trunkrs", barcode="NO_SENSOR", status="at_pickup_point"
+    )
+    data = await _setup_with_sources(
+        hass,
+        {
+            ("dpd", "e1_incoming_parcels"): ("2", {"parcels": [en_route, ready]}),
+            ("dpd", "e1_en_route_to_pickup_point"): ("1", {"parcels": [en_route]}),
+            ("dpd", "e1_awaiting_pickup"): ("1", {"parcels": [ready]}),
+            ("trunkrs", "e2_incoming_parcels"): ("1", {"parcels": [no_sensor]}),
+        },
+    )
 
-    assert [p["barcode"] for p in data["en_route_to_pickup_point"]["parcels"]] == ["EN_ROUTE"]
+    assert [p["barcode"] for p in data["en_route_to_pickup_point"]["parcels"]] == [
+        "EN_ROUTE"
+    ]
     assert [p["barcode"] for p in data["awaiting_pickup"]["parcels"]] == ["READY"]
 
 
 @pytest.mark.asyncio
 async def test_awaiting_pickup_strips_raw(hass):
     parcel = _parcel(carrier="DPD", status="at_pickup_point", raw={"big": "payload"})
-    data = await _setup_with_sources(hass, {
-        ("dpd", "e1_awaiting_pickup"): ("1", {"parcels": [parcel]}),
-    })
+    data = await _setup_with_sources(
+        hass,
+        {
+            ("dpd", "e1_awaiting_pickup"): ("1", {"parcels": [parcel]}),
+        },
+    )
 
     assert "raw" not in data["awaiting_pickup"]["parcels"][0]
 
@@ -457,12 +511,16 @@ async def test_awaiting_pickup_strips_raw(hass):
 async def test_carrier_unique_id_migration_is_picked_up_after_setup(hass):
     """A carrier renaming its summary unique_id after the aggregator started
     (same entity_id) must land the sensor in the right bucket."""
-    from homeassistant.helpers import entity_registry as er
 
-    ready = _parcel(carrier="DHL", barcode="READY", pickup=True, status="at_pickup_point")
-    data = await _setup_with_sources(hass, {
-        ("dhl_nl", "user1_pickup_pending"): ("1", {"parcels": [ready]}),
-    })
+    ready = _parcel(
+        carrier="DHL", barcode="READY", pickup=True, status="at_pickup_point"
+    )
+    data = await _setup_with_sources(
+        hass,
+        {
+            ("dhl_nl", "user1_pickup_pending"): ("1", {"parcels": [ready]}),
+        },
+    )
     assert data["awaiting_pickup"]["total"] == 0
 
     registry = er.async_get(hass)
@@ -472,7 +530,9 @@ async def test_carrier_unique_id_migration_is_picked_up_after_setup(hass):
 
     entry = hass.config_entries.async_entries("parcel_aggregator")[0]
     assert entity_id in entry.runtime_data._sources["awaiting_pickup"]
-    assert [p["barcode"] for p in entry.runtime_data.data["awaiting_pickup"]["parcels"]] == ["READY"]
+    assert [
+        p["barcode"] for p in entry.runtime_data.data["awaiting_pickup"]["parcels"]
+    ] == ["READY"]
 
 
 @pytest.mark.asyncio
@@ -480,10 +540,13 @@ async def test_a_carrier_record_wins_over_the_shop_copy(hass):
     shop = _parcel(carrier="DHL", barcode="JVGL1", sender="Amazon")
     carrier = _parcel(carrier="DHL", barcode="JVGL1", sender="Seller")
     # The shop source is registered first, so registry order alone would keep it.
-    data = await _setup_with_sources(hass, {
-        ("amazon_orders", "a_incoming_parcels"): ("1", {"parcels": [shop]}),
-        ("dhl", "b_incoming_parcels"): ("1", {"parcels": [carrier]}),
-    })
+    data = await _setup_with_sources(
+        hass,
+        {
+            ("amazon_orders", "a_incoming_parcels"): ("1", {"parcels": [shop]}),
+            ("dhl", "b_incoming_parcels"): ("1", {"parcels": [carrier]}),
+        },
+    )
 
     parcels = data["incoming"]["parcels"]
     assert len(parcels) == 1

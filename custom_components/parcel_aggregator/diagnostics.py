@@ -1,4 +1,5 @@
 """Diagnostics support for the Parcel Aggregator integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -27,11 +28,12 @@ async def async_get_config_entry_diagnostics(
     data = coordinator.data or {}
     return {
         "watched_source_count": sum(
-            len(bucket) for bucket in coordinator._sources.values()
+            len(bucket)
+            for bucket in coordinator._sources.values()  # noqa: SLF001 - diagnostics-only view of the watched sources
         ),
         "sources_by_bucket": {
             bucket: list(entities.keys())
-            for bucket, entities in coordinator._sources.items()
+            for bucket, entities in coordinator._sources.items()  # noqa: SLF001 - diagnostics-only view of the watched sources
         },
         "data": async_redact_data(data, TO_REDACT),
     }

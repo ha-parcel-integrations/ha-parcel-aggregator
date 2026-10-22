@@ -1,8 +1,9 @@
 """Tests for the ParcelAggregatorGetDetails Assist intent."""
-import pytest
+
 from homeassistant.components.homeassistant.exposed_entities import async_expose_entity
 from homeassistant.helpers import intent
 from homeassistant.setup import async_setup_component
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.parcel_aggregator import intent as parcel_intent

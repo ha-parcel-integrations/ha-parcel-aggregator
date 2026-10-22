@@ -1,4 +1,5 @@
 """Constants for the Parcel Aggregator integration."""
+
 from enum import StrEnum
 
 from homeassistant.const import Platform

@@ -1,10 +1,11 @@
 """Tests for the Assist natural-language summary helpers."""
+
 from datetime import timedelta
 
-import pytest
 from homeassistant.components.homeassistant.exposed_entities import async_expose_entity
 from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.parcel_aggregator.assist import (
@@ -161,7 +162,9 @@ async def test_describe_bucket_joins_multiple_parcels(hass):
 
 @pytest.mark.asyncio
 async def test_describe_bucket_single_parcel_nl(hass):
-    info = {"parcels": [_parcel(carrier="PostNL", sender="Bol.com", status="in_transit")]}
+    info = {
+        "parcels": [_parcel(carrier="PostNL", sender="Bol.com", status="in_transit")]
+    }
     text = await describe_bucket(hass, info, "incoming", language="nl")
     assert text == (
         "Je hebt 1 binnenkomend pakket: een PostNL-pakket van Bol.com, onderweg."

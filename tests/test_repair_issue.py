@@ -1,14 +1,14 @@
 """Tests for the no-source-carriers repair issue."""
+
+from homeassistant.helpers import entity_registry as er, issue_registry as ir
 import pytest
-from homeassistant.helpers import issue_registry as ir
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.parcel_aggregator.const import DOMAIN
 from custom_components.parcel_aggregator.coordinator import NO_SOURCES_ISSUE_ID
 
 
 def _add_entry(hass):
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
-
     entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
     entry.add_to_hass(hass)
     return entry
@@ -31,8 +31,6 @@ async def test_no_sources_issue_created_when_no_carriers_installed(hass):
 @pytest.mark.asyncio
 async def test_no_sources_issue_cleared_when_carrier_appears(hass):
     """Reloading after a carrier sensor is registered clears the repair issue."""
-    from homeassistant.helpers import entity_registry as er
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     # First setup creates the issue (no source carrier yet)
     entry = _add_entry(hass)
@@ -63,8 +61,6 @@ async def test_no_sources_issue_cleared_when_carrier_appears(hass):
 async def test_no_sources_issue_cleared_without_reload_when_carrier_appears(hass):
     """Registering a carrier source sensor after setup clears the issue live —
     no manual reload of the aggregator needed."""
-    from homeassistant.helpers import entity_registry as er
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     entry = _add_entry(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)

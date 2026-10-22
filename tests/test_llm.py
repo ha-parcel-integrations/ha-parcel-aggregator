@@ -4,9 +4,10 @@ Skipped wholesale on any HA version that predates ``homeassistant.helpers.llm``
 / ``homeassistant.components.llm`` — see the import-guard comment in
 ``custom_components/parcel_aggregator/llm.py``.
 """
-import pytest
+
 from homeassistant.components.homeassistant.exposed_entities import async_expose_entity
 from homeassistant.setup import async_setup_component
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 llm_helpers = pytest.importorskip("homeassistant.helpers.llm")
@@ -19,9 +20,11 @@ LLM_API_ASSIST = llm_helpers.LLM_API_ASSIST
 IntentTool = llm_helpers.IntentTool
 LLMContext = llm_helpers.LLMContext
 
-from custom_components.parcel_aggregator import intent as parcel_intent  # noqa: E402
-from custom_components.parcel_aggregator import llm as parcel_llm  # noqa: E402
-from custom_components.parcel_aggregator.const import DOMAIN  # noqa: E402
+from custom_components.parcel_aggregator import (  # noqa: E402 - after importorskip so the module skips cleanly
+    intent as parcel_intent,
+    llm as parcel_llm,
+)
+from custom_components.parcel_aggregator.const import DOMAIN  # noqa: E402 - see above
 
 INCOMING_ENTITY_ID = "sensor.parcel_aggregator_incoming_parcels"
 

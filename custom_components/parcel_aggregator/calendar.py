@@ -1,4 +1,5 @@
 """Calendar platform for the Parcel Aggregator integration."""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
