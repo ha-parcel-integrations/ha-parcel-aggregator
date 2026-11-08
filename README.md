@@ -187,6 +187,7 @@ Ready-to-paste carrier-agnostic automations live in [`examples/`](examples/).
 
 Third-party cards that work with these sensors:
 
+- [jonisnet/ha-parcel-card](https://github.com/jonisnet/ha-parcel-card)
 - [jonisnet/hki-parcels-card](https://github.com/jonisnet/hki-parcels-card)
 - [klaptafel/ha-package-tracker-card](https://github.com/klaptafel/ha-package-tracker-card)
 
