@@ -13,6 +13,16 @@ triggers:
   - trigger: event
     event_type: parcel_aggregator_parcel_delivery_time_changed
 
+# Some carriers refresh the ETA on every poll (a live countdown rather than a
+# fixed window), which can mean a notification every 15 minutes. Uncomment
+# this condition to only notify when the window is still unknown and just
+# became known, or when it shifts by more than 30 minutes.
+# conditions:
+#   - condition: template
+#     value_template: >-
+#       {{ trigger.event.data.old_planned_from is none or
+#          (as_datetime(trigger.event.data.new_planned_from) - as_datetime(trigger.event.data.old_planned_from)).total_seconds() | abs > 1800 }}
+
 actions:
   - action: notify.mobile_app
     data:
