@@ -172,6 +172,17 @@ class ParcelAggregatorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.async_set_updated_data(self._compute())
 
+    async def _async_update_data(self) -> dict[str, Any]:
+        """Recompute from the current source states.
+
+        There is nothing to fetch — the coordinator is driven by source state
+        changes. Without this, the generic ``homeassistant.update_entity``
+        service would reach ``DataUpdateCoordinator._async_update_data``, raise
+        ``NotImplementedError`` and leave every sensor unavailable until the
+        next source state change.
+        """
+        return self._compute()
+
     async def async_shutdown(self) -> None:
         """Cancel scheduled work and shut the coordinator down."""
         if self._unsub_listener is not None:

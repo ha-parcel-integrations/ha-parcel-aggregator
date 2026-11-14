@@ -1,10 +1,15 @@
 """Tests for the Parcel Aggregator's parsing and aggregation helpers."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from homeassistant.helpers import entity_registry as er
+from homeassistant.setup import async_setup_component
+from homeassistant.util import dt as dt_util
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    async_fire_time_changed,
+)
 
 from custom_components.parcel_aggregator.const import DOMAIN
 from custom_components.parcel_aggregator.coordinator import (
@@ -16,6 +21,8 @@ from custom_components.parcel_aggregator.coordinator import (
     sort_parcels_by_ts,
     strip_raw,
 )
+
+INCOMING_ENTITY_ID = "sensor.parcel_aggregator_incoming_parcels"
 
 
 def _parcel(
@@ -551,3 +558,41 @@ async def test_a_carrier_record_wins_over_the_shop_copy(hass):
     parcels = data["incoming"]["parcels"]
     assert len(parcels) == 1
     assert parcels[0]["sender"] == "Seller"
+
+
+@pytest.mark.asyncio
+async def test_update_entity_service_keeps_sensors_available(hass):
+    """``homeassistant.update_entity`` must not knock every sensor offline.
+
+    Regression for ha-parcel-aggregator#34: the coordinator is event-driven and
+    used to implement no ``_async_update_data``, so a forced refresh hit the
+    base class, raised ``NotImplementedError`` and left ``last_update_success``
+    false — all seven sensors unavailable until the next source state change.
+    """
+
+    registry = er.async_get(hass)
+    source = registry.async_get_or_create(
+        "sensor", "dhl_nl", "acc_incoming_parcels"
+    ).entity_id
+    hass.states.async_set(source, "1", {"parcels": [_parcel(barcode="A")]})
+
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    assert await async_setup_component(hass, "homeassistant", {})
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    await hass.services.async_call(
+        "homeassistant",
+        "update_entity",
+        {"entity_id": INCOMING_ENTITY_ID},
+        blocking=True,
+    )
+    # The forced refresh is debounced; let its cooldown elapse.
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=30))
+    await hass.async_block_till_done()
+
+    assert entry.runtime_data.last_update_success is True
+    state = hass.states.get(INCOMING_ENTITY_ID)
+    assert state is not None
+    assert state.state == "1"
