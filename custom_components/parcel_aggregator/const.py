@@ -123,6 +123,7 @@ KNOWN_CARRIERS: dict[str, str] = {
     "ups": "UPS",
     "usps": "USPS",
     "vinted_go": "Vinted Go",
+    "xlcourier": "XLCourier",
 }
 
 # Per-carrier event-name prefix on the HA event bus. Carriers that have
@@ -227,6 +228,7 @@ CARRIER_EVENT_PREFIXES: dict[str, str] = {
     "ups": "ups",
     "usps": "usps",
     "vinted_go": "vinted_go",
+    "xlcourier": "xlcourier",
 }
 
 EVENT_PARCEL_REGISTERED = f"{DOMAIN}_parcel_registered"
