@@ -1,6 +1,6 @@
 """Tests for the Parcel Aggregator combined deliveries calendar."""
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from unittest.mock import MagicMock
 
 from custom_components.parcel_aggregator.calendar import ParcelAggregatorCalendar
@@ -113,3 +113,85 @@ async def test_get_events_filters_by_range():
     end = datetime(2100, 1, 1, tzinfo=UTC)
     events = await cal.async_get_events(MagicMock(), start, end)
     assert {e.uid for e in events} == {"DPD_FUTURE"}
+
+
+def test_whole_day_window_is_an_all_day_event():
+    event = _calendar(
+        [
+            _parcel(
+                "DHL",
+                "A",
+                planned_from="2099-01-01T00:00:00+01:00",
+                planned_to="2099-01-01T23:59:59+01:00",
+            )
+        ]
+    )._events()[0]
+    assert (event.start, event.end) == (date(2099, 1, 1), date(2099, 1, 2))
+    assert event.all_day
+
+
+def test_window_over_whole_days_is_one_all_day_event():
+    event = _calendar(
+        [
+            _parcel(
+                "DHL",
+                "A",
+                planned_from="2099-01-01T00:00:00",
+                planned_to="2099-01-03T23:59:59",
+            )
+        ]
+    )._events()[0]
+    assert (event.start, event.end) == (date(2099, 1, 1), date(2099, 1, 4))
+
+
+async def test_whole_day_window_sent_in_utc_is_all_day_in_local_time(hass):
+    await hass.config.async_set_time_zone("Europe/Amsterdam")
+    event = _calendar(
+        [
+            _parcel(
+                "DHL",
+                "A",
+                planned_from="2099-01-01T23:00:00Z",
+                planned_to="2099-01-02T22:59:59Z",
+            )
+        ]
+    )._events()[0]
+    assert (event.start, event.end) == (date(2099, 1, 2), date(2099, 1, 3))
+
+
+def test_a_moment_stretched_to_the_end_of_its_day_stays_timed():
+    event = _calendar(
+        [
+            _parcel(
+                "DHL",
+                "A",
+                planned_from="2099-01-01T14:00:00+01:00",
+                planned_to="2099-01-01T23:59:59+01:00",
+            )
+        ]
+    )._events()[0]
+    assert not event.all_day
+
+
+async def test_all_day_events_are_upcoming_and_filtered_by_range():
+    cal = _calendar(
+        [
+            _parcel(
+                "DHL",
+                "PAST",
+                planned_from="2000-01-01T00:00:00",
+                planned_to="2000-01-01T23:59:59",
+            ),
+            _parcel(
+                "DHL",
+                "FUTURE",
+                planned_from="2099-01-01T00:00:00",
+                planned_to="2099-01-01T23:59:59",
+            ),
+        ]
+    )
+    assert cal.event.uid == "DHL_FUTURE"
+    events = await cal.async_get_events(
+        MagicMock(), datetime(2098, 1, 1, tzinfo=UTC), datetime(2100, 1, 1, tzinfo=UTC)
+    )
+    assert {e.uid for e in events} == {"DHL_FUTURE"}

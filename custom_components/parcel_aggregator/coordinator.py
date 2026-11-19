@@ -110,7 +110,7 @@ def sort_parcels_by_ts(
 
 
 def next_delivery_from(parcels: list[dict]) -> dict[str, Any]:
-    """Pick the earliest ``planned_from`` across a list of normalized parcels.
+    """Pick the earliest ``planned_from`` among parcels whose window has not ended.
 
     Returns ``{"value": <datetime|None>, "by_carrier": {<label>: <datetime>},
     "parcel": <minimal parcel dict|None>}``.
@@ -118,10 +118,13 @@ def next_delivery_from(parcels: list[dict]) -> dict[str, Any]:
     earliest: datetime | None = None
     earliest_parcel: dict | None = None
     by_carrier: dict[str, datetime] = {}
+    now = datetime.now(UTC)
 
     for parcel in parcels:
         dt = parse_timestamp_state(parcel.get("planned_from"))
         if dt is None:
+            continue
+        if (parse_timestamp_state(parcel.get("planned_to")) or dt) < now:
             continue
         carrier = parcel.get("carrier") or "Unknown"
         cur = by_carrier.get(carrier)

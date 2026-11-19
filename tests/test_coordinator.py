@@ -177,12 +177,12 @@ def test_strip_raw_keeps_top_level_history():
 def test_next_delivery_keeps_history_on_the_parcel():
     history = [
         {
-            "timestamp": "2026-06-20T09:00:00Z",
+            "timestamp": "2099-06-20T09:00:00Z",
             "status": "in_transit",
             "raw_status": "PARCEL_SORTED_AT_HUB",
         }
     ]
-    parcel = {**_parcel(planned_from="2026-06-20T09:00:00Z"), "history": history}
+    parcel = {**_parcel(planned_from="2099-06-20T09:00:00Z"), "history": history}
     result = next_delivery_from([parcel])
     assert result["parcel"]["history"] == history
     assert "raw" not in result["parcel"]
@@ -195,9 +195,9 @@ def test_next_delivery_keeps_history_on_the_parcel():
 
 def test_sort_parcels_orders_ascending_by_planned_from():
     parcels = [
-        _parcel(barcode="late", planned_from="2026-06-15T10:00:00+00:00"),
-        _parcel(barcode="early", planned_from="2026-06-13T08:00:00+00:00"),
-        _parcel(barcode="mid", planned_from="2026-06-14T12:00:00+00:00"),
+        _parcel(barcode="late", planned_from="2099-06-15T10:00:00+00:00"),
+        _parcel(barcode="early", planned_from="2099-06-13T08:00:00+00:00"),
+        _parcel(barcode="mid", planned_from="2099-06-14T12:00:00+00:00"),
     ]
     ordered = [p["barcode"] for p in sort_parcels_by_ts(parcels, "planned_from")]
     assert ordered == ["early", "mid", "late"]
@@ -206,13 +206,13 @@ def test_sort_parcels_orders_ascending_by_planned_from():
 def test_sort_parcels_orders_descending_for_delivered_at():
     parcels = [
         _parcel(
-            barcode="oldest", delivered=True, delivered_at="2026-06-13T08:00:00+00:00"
+            barcode="oldest", delivered=True, delivered_at="2099-06-13T08:00:00+00:00"
         ),
         _parcel(
-            barcode="newest", delivered=True, delivered_at="2026-06-15T10:00:00+00:00"
+            barcode="newest", delivered=True, delivered_at="2099-06-15T10:00:00+00:00"
         ),
         _parcel(
-            barcode="mid", delivered=True, delivered_at="2026-06-14T12:00:00+00:00"
+            barcode="mid", delivered=True, delivered_at="2099-06-14T12:00:00+00:00"
         ),
     ]
     ordered = [
@@ -225,9 +225,9 @@ def test_sort_parcels_orders_descending_for_delivered_at():
 def test_sort_parcels_keeps_missing_timestamps_at_end():
     parcels = [
         _parcel(barcode="no-ts-1", planned_from=None),
-        _parcel(barcode="early", planned_from="2026-06-13T08:00:00+00:00"),
+        _parcel(barcode="early", planned_from="2099-06-13T08:00:00+00:00"),
         _parcel(barcode="no-ts-2", planned_from="garbage"),
-        _parcel(barcode="late", planned_from="2026-06-15T10:00:00+00:00"),
+        _parcel(barcode="late", planned_from="2099-06-15T10:00:00+00:00"),
     ]
     ordered = [p["barcode"] for p in sort_parcels_by_ts(parcels, "planned_from")]
     assert ordered[:2] == ["early", "late"]
@@ -238,10 +238,10 @@ def test_sort_parcels_missing_timestamps_stay_at_end_when_descending():
     parcels = [
         _parcel(barcode="no-ts", delivered=True, delivered_at=None),
         _parcel(
-            barcode="newer", delivered=True, delivered_at="2026-06-15T10:00:00+00:00"
+            barcode="newer", delivered=True, delivered_at="2099-06-15T10:00:00+00:00"
         ),
         _parcel(
-            barcode="older", delivered=True, delivered_at="2026-06-13T10:00:00+00:00"
+            barcode="older", delivered=True, delivered_at="2099-06-13T10:00:00+00:00"
         ),
     ]
     ordered = [
@@ -307,14 +307,14 @@ async def test_shared_parcel_across_two_accounts_is_deduped(hass):
 
 def test_next_delivery_picks_earliest_across_carriers():
     parcels = [
-        _parcel(carrier="DHL", barcode="A", planned_from="2026-06-15T10:00:00+00:00"),
+        _parcel(carrier="DHL", barcode="A", planned_from="2099-06-15T10:00:00+00:00"),
         _parcel(
-            carrier="PostNL", barcode="B", planned_from="2026-06-13T08:00:00+00:00"
+            carrier="PostNL", barcode="B", planned_from="2099-06-13T08:00:00+00:00"
         ),
-        _parcel(carrier="DPD", barcode="C", planned_from="2026-06-14T12:00:00+00:00"),
+        _parcel(carrier="DPD", barcode="C", planned_from="2099-06-14T12:00:00+00:00"),
     ]
     result = next_delivery_from(parcels)
-    assert result["value"] == datetime(2026, 6, 13, 8, 0, 0, tzinfo=UTC)
+    assert result["value"] == datetime(2099, 6, 13, 8, 0, 0, tzinfo=UTC)
     assert result["parcel"]["barcode"] == "B"
     assert result["parcel"]["carrier"] == "PostNL"
     # raw is stripped from the surfaced parcel
@@ -323,22 +323,40 @@ def test_next_delivery_picks_earliest_across_carriers():
 
 def test_next_delivery_by_carrier_keeps_earliest_per_carrier():
     parcels = [
-        _parcel(carrier="DHL", barcode="A", planned_from="2026-06-15T10:00:00+00:00"),
-        _parcel(carrier="DHL", barcode="B", planned_from="2026-06-13T10:00:00+00:00"),
+        _parcel(carrier="DHL", barcode="A", planned_from="2099-06-15T10:00:00+00:00"),
+        _parcel(carrier="DHL", barcode="B", planned_from="2099-06-13T10:00:00+00:00"),
     ]
     result = next_delivery_from(parcels)
-    assert result["by_carrier"]["DHL"] == datetime(2026, 6, 13, 10, 0, 0, tzinfo=UTC)
+    assert result["by_carrier"]["DHL"] == datetime(2099, 6, 13, 10, 0, 0, tzinfo=UTC)
 
 
 def test_next_delivery_skips_parcels_without_planned_from():
     parcels = [
         _parcel(carrier="DHL", barcode="A", planned_from=None),
         _parcel(
-            carrier="PostNL", barcode="B", planned_from="2026-06-13T10:00:00+00:00"
+            carrier="PostNL", barcode="B", planned_from="2099-06-13T10:00:00+00:00"
         ),
     ]
     result = next_delivery_from(parcels)
     assert result["parcel"]["barcode"] == "B"
+
+
+def test_next_delivery_skips_a_window_that_has_ended():
+    parcels = [
+        _parcel(carrier="DHL", barcode="A", planned_from="2020-06-13T10:00:00+00:00"),
+        _parcel(
+            carrier="PostNL", barcode="B", planned_from="2099-06-13T10:00:00+00:00"
+        ),
+    ]
+    assert next_delivery_from(parcels)["parcel"]["barcode"] == "B"
+
+
+def test_next_delivery_keeps_a_window_still_running():
+    parcel = _parcel(
+        carrier="DHL", barcode="A", planned_from="2020-06-13T10:00:00+00:00"
+    )
+    parcel["planned_to"] = "2099-06-13T10:00:00+00:00"
+    assert next_delivery_from([parcel])["parcel"]["barcode"] == "A"
 
 
 def test_next_delivery_returns_none_when_no_data():
