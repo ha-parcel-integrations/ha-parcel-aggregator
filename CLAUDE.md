@@ -67,7 +67,7 @@ This repo follows it exactly.
   history option is on.
 - **Combined deliveries `calendar`** (`{DOMAIN}_deliveries`): read-only over the
   merged `coordinator.data["incoming"]["parcels"]`, **no own polling**, enabled by
-  default. Summary is **carrier-prefixed** (`"DHL: <sender>"`) and `uid` is
+  default. Summary is **carrier-prefixed** (`"DHL: <contents or sender>"`) and `uid` is
   `{carrier}_{barcode}` so the merged agenda stays unambiguous. This is *the*
   cross-carrier calendar; per-carrier repos each ship their own single-account one.
 - **Repair issue** (`ir.async_create_issue` / `async_delete_issue`) when no source

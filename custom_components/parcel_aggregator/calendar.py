@@ -111,7 +111,13 @@ class ParcelAggregatorCalendar(
             carrier = parcel.get("carrier") or "Parcel"
             barcode = parcel.get("barcode") or ""
             sender = parcel.get("sender")
-            label = sender or (f"Parcel {barcode}" if barcode else "parcel")
+            # Contents say what the parcel is; sender is the fallback for carriers
+            # that do not report them, and `contents` may be absent entirely.
+            label = (
+                parcel.get("contents")
+                or sender
+                or (f"Parcel {barcode}" if barcode else "parcel")
+            )
             summary = f"{carrier}: {label}"
             description_parts = [
                 f"Carrier: {carrier}",

@@ -195,3 +195,29 @@ async def test_all_day_events_are_upcoming_and_filtered_by_range():
         MagicMock(), datetime(2098, 1, 1, tzinfo=UTC), datetime(2100, 1, 1, tzinfo=UTC)
     )
     assert {e.uid for e in events} == {"DHL_FUTURE"}
+
+
+def _summary(**overrides) -> str:
+    parcel = _parcel("DHL", "B1", planned_from="2099-01-01T10:00:00Z")
+    parcel.update(overrides)
+    (event,) = _calendar([parcel])._events()
+    return event.summary
+
+
+def test_summary_prefers_contents_over_sender():
+    assert _summary(contents="Blue Mug; Tea Towel") == "DHL: Blue Mug; Tea Towel"
+
+
+def test_summary_uses_sender_without_contents():
+    assert _summary(contents=None) == "DHL: Example Sender"
+
+
+def test_summary_falls_back_to_barcode_without_contents_or_sender():
+    assert _summary(contents=None, sender=None) == "DHL: Parcel B1"
+
+
+def test_summary_works_when_contents_key_is_missing():
+    parcel = _parcel("DHL", "B1", planned_from="2099-01-01T10:00:00Z")
+    assert "contents" not in parcel
+    (event,) = _calendar([parcel])._events()
+    assert event.summary == "DHL: Example Sender"
