@@ -61,15 +61,24 @@ def dedupe_parcels(parcels: list[dict]) -> list[dict]:
     A parcel with shared visibility (e.g. two housemates' PostNL accounts both
     seeing the same delivery) is reported by every source instance that can see
     it. Without this, it would appear once per source instead of once overall.
+
+    A shop knows what is in the box while the courier usually does not, so a
+    winner without ``contents`` takes the first non-empty value of a duplicate.
+    The winner is copied first because the source attribute dicts are shared.
     """
-    seen: set[tuple[Any, Any]] = set()
+    index: dict[tuple[Any, Any], int] = {}
     deduped: list[dict] = []
     for parcel in parcels:
         key = (parcel.get("carrier"), parcel.get("barcode"))
-        if key in seen:
+        position = index.get(key)
+        if position is None:
+            index[key] = len(deduped)
+            deduped.append(parcel)
             continue
-        seen.add(key)
-        deduped.append(parcel)
+        winner = deduped[position]
+        contents = parcel.get("contents")
+        if winner.get("contents") is None and contents is not None:
+            deduped[position] = {**winner, "contents": contents}
     return deduped
 
 

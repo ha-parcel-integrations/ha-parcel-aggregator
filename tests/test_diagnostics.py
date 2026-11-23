@@ -73,5 +73,20 @@ async def test_diagnostics_redacts_per_parcel_pii():
 
 
 def test_to_redact_covers_expected_keys():
-    for key in ("barcode", "sender", "pickup_point", "url", "raw"):
+    for key in ("barcode", "sender", "pickup_point", "url", "raw", "contents"):
         assert key in TO_REDACT
+
+
+@pytest.mark.asyncio
+async def test_diagnostics_redacts_contents():
+    entry = _entry(
+        data={
+            "incoming": {
+                "total": 1,
+                "by_carrier": {"DHL": 1},
+                "parcels": [{"carrier": "DHL", "contents": "Blue kettle; Tea tin"}],
+            }
+        },
+    )
+    result = await async_get_config_entry_diagnostics(MagicMock(), entry)
+    assert result["data"]["incoming"]["parcels"][0]["contents"] == REDACTED

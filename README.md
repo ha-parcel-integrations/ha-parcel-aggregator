@@ -119,6 +119,7 @@ The `parcels` attribute on each summary sensor contains every parcel from every 
 | `barcode` | string | Parcel tracking number |
 | `sender` | string \| null | Sender name (e.g. webshop) |
 | `receiver` | string \| null | Recipient name |
+| `contents` | string \| null | What is in the parcel (several items joined `A; B`), when the carrier or shop reports it; absent from carriers that do not provide it yet |
 | `status` | `ParcelStatus` | Canonical status — see the [status reference](#parcel-status-reference) |
 | `raw_status` | string \| null | Original carrier-specific status string |
 | `delivered` | bool | Whether the parcel has been delivered |

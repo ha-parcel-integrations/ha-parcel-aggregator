@@ -119,6 +119,49 @@ def test_dedupe_keeps_two_distinct_parcels_from_two_accounts_same_carrier():
     assert dedupe_parcels([a, b]) == [a, b]
 
 
+def test_dedupe_courier_takes_contents_from_shop_copy():
+    courier = _parcel(carrier="PostNL", barcode="X1")
+    shop = {**_parcel(carrier="PostNL", barcode="X1"), "contents": "Blue kettle"}
+    courier["contents"] = None
+    result = dedupe_parcels([courier, shop])
+    assert len(result) == 1
+    assert result[0]["contents"] == "Blue kettle"
+    assert result[0]["sender"] == courier["sender"]
+    assert courier["contents"] is None  # the shared source dict is not mutated
+
+
+def test_dedupe_courier_takes_contents_when_key_is_missing():
+    courier = _parcel(carrier="PostNL", barcode="X1")
+    shop = {**_parcel(carrier="PostNL", barcode="X1"), "contents": "Blue kettle"}
+    assert "contents" not in courier
+    assert dedupe_parcels([courier, shop])[0]["contents"] == "Blue kettle"
+    assert "contents" not in courier
+
+
+def test_dedupe_courier_keeps_its_own_contents():
+    courier = {**_parcel(carrier="PostNL", barcode="X1"), "contents": "Tea tin"}
+    shop = {**_parcel(carrier="PostNL", barcode="X1"), "contents": "Blue kettle"}
+    assert dedupe_parcels([courier, shop]) == [courier]
+
+
+def test_dedupe_without_any_contents_stays_none():
+    a = {**_parcel(carrier="PostNL", barcode="X1"), "contents": None}
+    b = _parcel(carrier="PostNL", barcode="X1")
+    result = dedupe_parcels([a, b])
+    assert result == [a]
+    assert result[0]["contents"] is None
+
+
+def test_dedupe_first_non_none_contents_wins_among_shop_copies():
+    courier = {**_parcel(carrier="PostNL", barcode="X1"), "contents": None}
+    shop_a = {**_parcel(carrier="PostNL", barcode="X1"), "contents": None}
+    shop_b = {**_parcel(carrier="PostNL", barcode="X1"), "contents": "Blue kettle"}
+    shop_c = {**_parcel(carrier="PostNL", barcode="X1"), "contents": "Tea tin"}
+    assert dedupe_parcels([courier, shop_a, shop_b, shop_c])[0]["contents"] == (
+        "Blue kettle"
+    )
+
+
 # ---------------------------------------------------------------------------
 # count_by_carrier
 # ---------------------------------------------------------------------------
@@ -298,6 +341,43 @@ async def test_shared_parcel_across_two_accounts_is_deduped(hass):
     assert data["incoming"]["by_carrier"] == {"PostNL": 1}
     assert len(data["incoming"]["parcels"]) == 1
     assert data["incoming"]["parcels"][0]["barcode"] == "AAAA1111111111"
+
+
+@pytest.mark.asyncio
+async def test_contents_survives_strip_raw_and_missing_key_works(hass):
+    """``contents`` flows into the merged lists; a parcel without the key works."""
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    postnl_entry = MockConfigEntry(domain="postnl", unique_id="acc")
+    postnl_entry.add_to_hass(hass)
+    source = registry.async_get_or_create(
+        domain="sensor",
+        platform="postnl",
+        unique_id="acc_incoming_parcels",
+        config_entry=postnl_entry,
+    ).entity_id
+    with_contents = {
+        **_parcel(
+            carrier="PostNL", barcode="C1", planned_from="2026-12-01T10:00:00+00:00"
+        ),
+        "contents": "Blue kettle; Tea tin",
+    }
+    without_key = _parcel(
+        carrier="PostNL", barcode="C2", planned_from="2026-12-02T10:00:00+00:00"
+    )
+    hass.states.async_set(source, "2", {"parcels": [without_key, with_contents]})
+
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    parcels = entry.runtime_data.data["incoming"]["parcels"]
+    assert [p["barcode"] for p in parcels] == ["C1", "C2"]
+    assert parcels[0]["contents"] == "Blue kettle; Tea tin"
+    assert "raw" not in parcels[0]
+    assert parcels[1].get("contents") is None
+    nxt = entry.runtime_data.data["next_delivery"]["parcel"]
+    assert nxt["contents"] == "Blue kettle; Tea tin"
 
 
 # ---------------------------------------------------------------------------

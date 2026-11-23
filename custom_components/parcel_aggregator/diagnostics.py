@@ -14,6 +14,7 @@ from . import ParcelAggregatorConfigEntry
 TO_REDACT = {
     "barcode",
     "sender",
+    "contents",
     "pickup_point",
     "url",
     "raw",
