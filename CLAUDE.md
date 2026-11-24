@@ -43,7 +43,8 @@ This repo follows it exactly.
   / outgoing_delivered), `ATTR_KEY_BY_BUCKET` (bucket → source attribute key,
   always `parcels`).
 - **Shop sources lose the dedupe.** Parcels are deduped on `(carrier, barcode)`,
-  first seen wins. A shop (`SHOP_DOMAINS`, today only `amazon_orders`) reports
+  first seen wins; the carrier is compared stripped and casefolded, never
+  rewritten. A shop (`SHOP_DOMAINS`, today only `amazon_orders`) reports
   the delivering courier as `carrier`, so its copy collides with that carrier's
   own record; `_collect_parcels` reads shop sources last so the carrier's richer
   record wins. Don't drop the sort for registry order.

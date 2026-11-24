@@ -100,6 +100,14 @@ def test_dedupe_collapses_same_carrier_and_barcode():
     assert dedupe_parcels([a, b]) == [a]
 
 
+def test_dedupe_ignores_the_carrier_s_casing():
+    # A shop spelling the courier differently from its own integration (#41).
+    carrier = _parcel(carrier="bpost", barcode="323212505100078300000000")
+    shop = _parcel(carrier="Bpost ", barcode="323212505100078300000000")
+    shop["contents"] = "Book"
+    assert dedupe_parcels([carrier, shop]) == [{**carrier, "contents": "Book"}]
+
+
 def test_dedupe_keeps_distinct_barcodes():
     a = _parcel(carrier="PostNL", barcode="AAAA1111111111")
     b = _parcel(carrier="PostNL", barcode="BBBB2222222222")

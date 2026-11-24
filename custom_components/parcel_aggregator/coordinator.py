@@ -55,6 +55,9 @@ def parse_timestamp_state(value: str | None) -> datetime | None:
 def dedupe_parcels(parcels: list[dict]) -> list[dict]:
     """Collapse parcels sharing a ``(carrier, barcode)`` key, keeping the first seen.
 
+    The carrier is compared case-insensitively: a shop may spell the courier
+    differently from the courier's own integration (``Bpost`` vs ``bpost``).
+
     Callers pass shop sources last (``SHOP_DOMAINS``), so a carrier's own record
     wins over a shop's copy of the same parcel.
 
@@ -69,7 +72,10 @@ def dedupe_parcels(parcels: list[dict]) -> list[dict]:
     index: dict[tuple[Any, Any], int] = {}
     deduped: list[dict] = []
     for parcel in parcels:
-        key = (parcel.get("carrier"), parcel.get("barcode"))
+        carrier = parcel.get("carrier")
+        if isinstance(carrier, str):
+            carrier = carrier.strip().casefold()
+        key = (carrier, parcel.get("barcode"))
         position = index.get(key)
         if position is None:
             index[key] = len(deduped)
